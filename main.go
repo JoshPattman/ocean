@@ -71,6 +71,7 @@ func run() {
 	foodBatch := pixel.NewBatch(&pixel.TrianglesData{}, foodPic)
 	creatureBatch := pixel.NewBatch(&pixel.TrianglesData{}, creaturePic)
 	plantBatch := pixel.NewBatch(&pixel.TrianglesData{}, plantPic)
+	//imd := imdraw.New(nil)
 
 	// Create UI elements
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
@@ -165,9 +166,17 @@ func run() {
 		}
 		foodBatch.Draw(win)
 		// Draw creatures
+		//imd.Clear()
 		for _, c := range env.Creatures.Objects {
 			creatureSprite.Draw(creatureBatch, pixel.IM.Scaled(pixel.ZV, c.Radius/creatureSprite.Frame().W()).Rotated(pixel.ZV, c.Rot).Moved(c.Pos).Moved(offset).Scaled(win.Bounds().Center(), scale))
+			/*for i := range c.debugSensorAngles {
+				imd.Color = lerpColor(colornames.Blue, colornames.Red, c.debugAnimalSensorValues[i])
+				imd.Push(c.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
+				imd.Push(c.Pos.Add(pixel.V(0, 10).Rotated(c.debugSensorAngles[i] + c.Rot)).Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
+				imd.Line(2)
+			}*/
 		}
+		//imd.Draw(win)
 		creatureBatch.Draw(win)
 		// Draw plants
 		for _, p := range env.Plants.Objects {

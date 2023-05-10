@@ -7,12 +7,15 @@ import (
 )
 
 type Creature struct {
-	Pos    pixel.Vec
-	Vel    pixel.Vec
-	Radius float64
-	Rot    float64
-	Energy float64
-	DNA    CreatureDNA
+	Pos                     pixel.Vec
+	Vel                     pixel.Vec
+	Radius                  float64
+	Rot                     float64
+	Energy                  float64
+	DNA                     CreatureDNA
+	debugFoodSensorValues   []float64
+	debugAnimalSensorValues []float64
+	debugSensorAngles       []float64
 }
 
 // No state, but carries info about how to make a creature
@@ -161,6 +164,59 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 			break
 		}
 	}
+
+	// Detect food
+	sensorFoodValues := make([]float64, 0)
+	sensorAnimalValues := make([]float64, 0)
+	sensorAngles := make([]float64, 0)
+	sensorWidth := math.Pi / 10
+	for sensorAngle := -math.Pi / 2; sensorAngle <= math.Pi/2; sensorAngle += sensorWidth {
+		// Find the sensor dir
+		sensorDir := pixel.V(0, 1).Rotated(c.Rot + sensorAngle)
+		// Set up the unsensed values
+		sensorFoodValue := 0.0
+		sensorAnimalValue := 0.0
+		// Check Food sensors
+		for _, f := range nearbyFood {
+			dirToFood := f.Pos.Sub(c.Pos)
+			distToFood := dirToFood.Len()
+			dotSensorDir := dirToFood.Dot(sensorDir)
+			if dotSensorDir > 0 {
+				allowedDistFromLine := math.Sin(sensorWidth) / 2 * distToFood
+				distToLine := math.Abs(dirToFood.Sub(sensorDir.Scaled(dotSensorDir)).Len())
+				if distToLine <= allowedDistFromLine {
+					newValue := 1 - distToFood/sight
+					if newValue > sensorFoodValue {
+						sensorFoodValue = newValue
+					}
+				}
+			}
+		}
+		// Check Animal sensors
+		for _, f := range neighbors {
+			dirToAnimal := f.Pos.Sub(c.Pos)
+			distToAnimal := dirToAnimal.Len()
+			dotSensorDir := dirToAnimal.Dot(sensorDir)
+			if dotSensorDir > 0 {
+				allowedDistFromLine := math.Sin(sensorWidth) / 2 * distToAnimal
+				distToLine := math.Abs(dirToAnimal.Sub(sensorDir.Scaled(dotSensorDir)).Len())
+				if distToLine <= allowedDistFromLine {
+					newValue := 1 - distToAnimal/sight
+					if newValue > sensorAnimalValue {
+						sensorAnimalValue = newValue
+					}
+				}
+			}
+		}
+
+		// Add the values to the list
+		sensorAngles = append(sensorAngles, sensorAngle)
+		sensorFoodValues = append(sensorFoodValues, sensorFoodValue)
+		sensorAnimalValues = append(sensorAnimalValues, sensorAnimalValue)
+	}
+	c.debugFoodSensorValues = sensorFoodValues
+	c.debugSensorAngles = sensorAngles
+	c.debugAnimalSensorValues = sensorAnimalValues
 
 	// Apply chosen motion
 	forwardsPush := c.DNA.Speed * SPPropulsionForce
