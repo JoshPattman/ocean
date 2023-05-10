@@ -18,12 +18,13 @@ import (
 // Global Sim Params
 var (
 	SPEnergyDecrease     float64 = 0.05
-	SPDrag               float64 = 10
+	SPDrag               float64 = 8
 	SPPropulsionForce    float64 = 20
 	SPFoodDrainRate      float64 = 5
 	SPIdleEnergyDecrease float64 = 0.01
 	SPPlantDensity       float64 = 0.1
 	SPPlantDrag          float64 = 3
+	SPDeathEnergy        float64 = 1
 )
 
 func main() {
@@ -34,7 +35,7 @@ func run() {
 	startTime := time.Now()
 
 	// Setup Environment
-	env := NewEnvironment(250)
+	env := NewEnvironment(500)
 	env.ScatterFood(0.01)
 	for i := 0; i < 200; i++ {
 		c := NewCreature(CreatureDNA{

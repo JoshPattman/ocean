@@ -25,12 +25,11 @@ type CreatureDNA struct {
 	Diet float64 // 0 = veggie, 1 = meat
 }
 
-func (c CreatureDNA) MaxEnergy() float64 { return c.Size * c.Size * c.Size }
-func (c CreatureDNA) EnergyDecreaseRate() float64 {
-	return c.Size*c.Size*c.Speed*c.Speed + SPIdleEnergyDecrease
-}
-func (c CreatureDNA) FoodDrainRate() float64 { return c.Size * c.Size }
-func (c CreatureDNA) PlantDrag() float64     { return c.Size }
+func (c CreatureDNA) MaxEnergy() float64          { return c.Size * c.Size * c.Size }
+func (c CreatureDNA) EnergyDecreaseRate() float64 { return c.Size * c.Size * c.Speed * c.Speed }
+func (c CreatureDNA) FoodDrainRate() float64      { return c.Size * c.Size }
+func (c CreatureDNA) PlantDrag() float64          { return c.Size }
+func (c CreatureDNA) DeathEnergy() float64        { return c.MaxEnergy() }
 
 func (c CreatureDNA) Validated() CreatureDNA {
 	newDNA := c
@@ -63,6 +62,14 @@ func (c *Creature) Eq(o HashMappable) bool {
 	return c.Pos == o.(*Creature).Pos
 }
 
+func (c *Creature) Die(e *Environment) {
+	e.Creatures.Remove(c)
+	f := NewFood(c.DNA.DeathEnergy()*SPDeathEnergy+c.Energy, false)
+	f.Pos = c.Pos
+	f.Rot = c.Rot
+	e.Food.Add(f)
+}
+
 func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Update knowlege
 	sight := 10.0
@@ -72,13 +79,9 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	nearbyPlants := e.Plants.Query(c.Pos, math.Max(10, sight))
 
 	// Update non physical attributes
-	c.Energy -= SPEnergyDecrease * deltaTime * c.DNA.EnergyDecreaseRate()
+	c.Energy -= deltaTime * (SPEnergyDecrease*c.DNA.EnergyDecreaseRate() + SPIdleEnergyDecrease)
 	if c.Energy <= 0 {
-		e.Creatures.Remove(c)
-		f := NewFood(c.DNA.MaxEnergy(), false)
-		f.Pos = c.Pos
-		f.Rot = c.Rot
-		e.Food.Add(f)
+		c.Die(e)
 		return
 	}
 
