@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
 	"golang.org/x/image/colornames"
@@ -18,15 +19,19 @@ import (
 
 // Global Sim Params
 var (
-	SPEnergyDecrease     float64 = 0.05
+	SPEnergyDecrease     float64 = 0.01
 	SPDrag               float64 = 8
 	SPPropulsionForce    float64 = 20
 	SPFoodDrainRate      float64 = 5
-	SPIdleEnergyDecrease float64 = 0.01
+	SPIdleEnergyDecrease float64 = 0.2
 	SPPlantDensity       float64 = 0.1
 	SPPlantDrag          float64 = 3
 	SPDeathEnergy        float64 = 1
 	SPFoodGrowDelay      float64 = 10
+)
+
+var (
+	debugCreatureSensors bool = true
 )
 
 func main() {
@@ -71,7 +76,7 @@ func run() {
 	foodBatch := pixel.NewBatch(&pixel.TrianglesData{}, foodPic)
 	creatureBatch := pixel.NewBatch(&pixel.TrianglesData{}, creaturePic)
 	plantBatch := pixel.NewBatch(&pixel.TrianglesData{}, plantPic)
-	//imd := imdraw.New(nil)
+	imd := imdraw.New(nil)
 
 	// Create UI elements
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
@@ -166,17 +171,19 @@ func run() {
 		}
 		foodBatch.Draw(win)
 		// Draw creatures
-		//imd.Clear()
+		imd.Clear()
 		for _, c := range env.Creatures.Objects {
 			creatureSprite.Draw(creatureBatch, pixel.IM.Scaled(pixel.ZV, c.Radius/creatureSprite.Frame().W()).Rotated(pixel.ZV, c.Rot).Moved(c.Pos).Moved(offset).Scaled(win.Bounds().Center(), scale))
-			/*for i := range c.debugSensorAngles {
-				imd.Color = lerpColor(colornames.Blue, colornames.Red, c.debugAnimalSensorValues[i])
-				imd.Push(c.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
-				imd.Push(c.Pos.Add(pixel.V(0, 10).Rotated(c.debugSensorAngles[i] + c.Rot)).Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
-				imd.Line(2)
-			}*/
+			if debugCreatureSensors {
+				for i := range c.debugSensorAngles {
+					imd.Color = lerpColor(colornames.Blue, colornames.Red, c.debugAnimalSensorValues[i])
+					imd.Push(c.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
+					imd.Push(c.Pos.Add(pixel.V(0, 10).Rotated(c.debugSensorAngles[i] + c.Rot)).Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
+					imd.Line(2)
+				}
+			}
 		}
-		//imd.Draw(win)
+		imd.Draw(win)
 		creatureBatch.Draw(win)
 		// Draw plants
 		for _, p := range env.Plants.Objects {
