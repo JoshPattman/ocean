@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"image/png"
+	"math"
 	"math/rand"
 	"os"
 	"time"
@@ -25,6 +26,7 @@ var (
 	SPPlantDensity       float64 = 0.1
 	SPPlantDrag          float64 = 3
 	SPDeathEnergy        float64 = 1
+	SPFoodGrowDelay      float64 = 10
 )
 
 func main() {
@@ -36,7 +38,7 @@ func run() {
 
 	// Setup Environment
 	env := NewEnvironment(500)
-	env.ScatterFood(0.01)
+	//env.ScatterFood(0.01)
 	for i := 0; i < 200; i++ {
 		c := NewCreature(CreatureDNA{
 			Size:  1.5 + (rand.Float64()-0.5)*2,
@@ -122,6 +124,18 @@ func run() {
 		}
 
 		// Update Sim
+		// Grow new food on plants
+		for _, p := range env.Plants.Objects {
+			if rand.Float64() < (1/60.0)/SPFoodGrowDelay {
+				// Check if there is already a food under us
+				if len(env.Food.Query(p.Pos, 0.1)) == 0 {
+					f := NewFood(0.5+rand.Float64()*2, true)
+					f.Pos = p.Pos
+					f.Rot = rand.Float64() * 2 * math.Pi
+					env.Food.Add(f)
+				}
+			}
+		}
 		// Update hash maps
 		env.Creatures.Refresh()
 		env.Food.Refresh()
