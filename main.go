@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/JoshPattman/goevo"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
@@ -19,19 +20,17 @@ import (
 
 // Global Sim Params
 var (
-	SPEnergyDecrease     float64 = 0.01
-	SPDrag               float64 = 8
-	SPPropulsionForce    float64 = 20
-	SPFoodDrainRate      float64 = 5
-	SPIdleEnergyDecrease float64 = 0.2
-	SPPlantDensity       float64 = 0.1
-	SPPlantDrag          float64 = 3
-	SPDeathEnergy        float64 = 1
-	SPFoodGrowDelay      float64 = 10
+	SPEnergyDecrease  float64 = 0.02
+	SPDrag            float64 = 8
+	SPPropulsionForce float64 = 20
+	SPFoodDrainRate   float64 = 5
+	SPPlantDensity    float64 = 0.1
+	SPPlantDrag       float64 = 3
+	SPFoodGrowDelay   float64 = 30
 )
 
 var (
-	debugCreatureSensors bool = true
+	debugCreatureSensors bool = false
 )
 
 func main() {
@@ -41,16 +40,26 @@ func main() {
 func run() {
 	startTime := time.Now()
 
+	// Setup goevo
+	gtCounter := goevo.NewAtomicCounter()
+	gtOrig := goevo.NewGenotype(gtCounter, NewCreature(CreatureDNA{}).NumInputs(), 2, goevo.ActivationLinear, goevo.ActivationTanh)
+
 	// Setup Environment
-	env := NewEnvironment(500)
+	env := NewEnvironment(400)
 	//env.ScatterFood(0.01)
-	for i := 0; i < 200; i++ {
+	for i := 0; i < 300; i++ {
+		gt := goevo.NewGenotypeCopy(gtOrig)
+		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
+		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
+		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
 		c := NewCreature(CreatureDNA{
-			Size:  1.5 + (rand.Float64()-0.5)*2,
-			Speed: 1.5 + (rand.Float64()-0.5)*2,
-			Diet:  rand.Float64(),
+			Size:     1 + (rand.Float64()-0.5)*2,
+			Speed:    1 + (rand.Float64()-0.5)*2,
+			Diet:     rand.Float64(),
+			Genotype: gt,
+			Color:    RandomHSV(),
 		})
-		c.Pos = pixel.V(rand.Float64()*30-15, rand.Float64()*30-15)
+		c.Pos = pixel.V(rand.Float64()*100-50, rand.Float64()*100-50)
 		env.Creatures.Add(c)
 	}
 
@@ -109,20 +118,34 @@ func run() {
 			scale *= 1.01
 		}
 
-		if win.JustPressed(pixelgl.KeyM) || len(env.Creatures.Objects) < 50 {
-			newCreatures := make([]*Creature, 0)
-			for _, c := range env.Creatures.Objects {
+		newCreatures := make([]*Creature, 0)
+		for _, c := range env.Creatures.Objects {
+			me := c.DNA.MaxEnergy()
+			if c.Energy >= me*0.8 && rand.Float64() < (1/60.0)/5 {
 				dna := c.DNA
 				dna.Diet += (rand.Float64()*2 - 1) * 0.2
 				dna.Size += (rand.Float64()*2 - 1) * 0.2
 				dna.Speed += (rand.Float64()*2 - 1) * 0.2
+				dna.Genotype = goevo.NewGenotypeCopy(c.DNA.Genotype)
+				for i := 0; i < rand.Intn(4); i++ {
+					goevo.MutateRandomSynapse(dna.Genotype, 0.3)
+				}
+				if rand.Float64() < 0.3 {
+					goevo.AddRandomSynapse(gtCounter, dna.Genotype, 0.5, false, 5)
+				}
+				if rand.Float64() < 0.1 {
+					goevo.AddRandomNeuron(gtCounter, dna.Genotype, goevo.ActivationSigmoid)
+				}
 				c1 := NewCreature(dna)
 				c1.Pos = c.Pos
+				c1.Energy = me * 0.79
+				c.Energy = me * 0.79
+				c1.DNA.Color = c.DNA.Color.Randomised(0.1)
 				newCreatures = append(newCreatures, c1)
 			}
-			for _, c1 := range newCreatures {
-				env.Creatures.Add(c1)
-			}
+		}
+		for _, c1 := range newCreatures {
+			env.Creatures.Add(c1)
 		}
 
 		if win.JustPressed(pixelgl.KeyN) {
@@ -173,12 +196,12 @@ func run() {
 		// Draw creatures
 		imd.Clear()
 		for _, c := range env.Creatures.Objects {
-			creatureSprite.Draw(creatureBatch, pixel.IM.Scaled(pixel.ZV, c.Radius/creatureSprite.Frame().W()).Rotated(pixel.ZV, c.Rot).Moved(c.Pos).Moved(offset).Scaled(win.Bounds().Center(), scale))
+			creatureSprite.DrawColorMask(creatureBatch, pixel.IM.Scaled(pixel.ZV, c.Radius/creatureSprite.Frame().W()).Rotated(pixel.ZV, c.Rot).Moved(c.Pos).Moved(offset).Scaled(win.Bounds().Center(), scale), c.DNA.Color.ToColor())
 			if debugCreatureSensors {
-				for i := range c.debugSensorAngles {
+				for i := range c.sensorAngles {
 					imd.Color = lerpColor(colornames.Blue, colornames.Red, c.debugAnimalSensorValues[i])
 					imd.Push(c.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
-					imd.Push(c.Pos.Add(pixel.V(0, 10).Rotated(c.debugSensorAngles[i] + c.Rot)).Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
+					imd.Push(c.Pos.Add(pixel.V(0, 10).Rotated(c.sensorAngles[i] + c.Rot)).Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
 					imd.Line(2)
 				}
 			}

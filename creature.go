@@ -3,6 +3,7 @@ package main
 import (
 	"math"
 
+	"github.com/JoshPattman/goevo"
 	"github.com/faiface/pixel"
 )
 
@@ -15,7 +16,8 @@ type Creature struct {
 	DNA                     CreatureDNA
 	debugFoodSensorValues   []float64
 	debugAnimalSensorValues []float64
-	debugSensorAngles       []float64
+	sensorAngles            []float64
+	phenotype               *goevo.Phenotype
 }
 
 // No state, but carries info about how to make a creature
@@ -26,13 +28,19 @@ type CreatureDNA struct {
 
 	// Balances
 	Diet float64 // 0 = veggie, 1 = meat
+
+	// Brain
+	Genotype *goevo.Genotype
+
+	// Cosmetic
+	Color ColorHSV
 }
 
-func (c CreatureDNA) MaxEnergy() float64          { return c.Size * c.Size * c.Size }
-func (c CreatureDNA) EnergyDecreaseRate() float64 { return c.Size * c.Size * c.Speed * c.Speed }
-func (c CreatureDNA) FoodDrainRate() float64      { return c.Size * c.Size }
+func (c CreatureDNA) MaxEnergy() float64          { return c.Size * c.Size }
+func (c CreatureDNA) EnergyDecreaseRate() float64 { return c.Size + c.Speed }
+func (c CreatureDNA) FoodDrainRate() float64      { return c.Size }
 func (c CreatureDNA) PlantDrag() float64          { return c.Size }
-func (c CreatureDNA) DeathEnergy() float64        { return c.MaxEnergy() }
+func (c CreatureDNA) DeathEnergy() float64        { return c.MaxEnergy() * 0.2 }
 
 func (c CreatureDNA) Validated() CreatureDNA {
 	newDNA := c
@@ -44,13 +52,24 @@ func (c CreatureDNA) Validated() CreatureDNA {
 
 func NewCreature(dna CreatureDNA) *Creature {
 	dna = dna.Validated()
+	sa := make([]float64, 0)
+	sensorWidth := math.Pi / 10
+	for sensorAngle := -math.Pi / 2; sensorAngle <= math.Pi/2; sensorAngle += sensorWidth {
+		sa = append(sa, sensorAngle)
+	}
+	var pheno *goevo.Phenotype
+	if dna.Genotype != nil {
+		pheno = goevo.NewPhenotype(dna.Genotype)
+	}
 	return &Creature{
-		Pos:    pixel.V(0, 0),
-		Vel:    pixel.V(0, 0),
-		Radius: 1 * dna.Size,
-		Rot:    0,
-		Energy: dna.MaxEnergy(),
-		DNA:    dna,
+		Pos:          pixel.V(0, 0),
+		Vel:          pixel.V(0, 0),
+		Radius:       1 * dna.Size,
+		Rot:          0,
+		Energy:       dna.MaxEnergy(),
+		DNA:          dna,
+		sensorAngles: sa,
+		phenotype:    pheno,
 	}
 }
 
@@ -65,9 +84,13 @@ func (c *Creature) Eq(o HashMappable) bool {
 	return c.Pos == o.(*Creature).Pos
 }
 
+func (c *Creature) NumInputs() int {
+	return len(c.sensorAngles)
+}
+
 func (c *Creature) Die(e *Environment) {
 	e.Creatures.Remove(c)
-	f := NewFood(c.DNA.DeathEnergy()*SPDeathEnergy+c.Energy, false)
+	f := NewFood(c.Energy, false)
 	f.Pos = c.Pos
 	f.Rot = c.Rot
 	e.Food.Add(f)
@@ -82,8 +105,8 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	nearbyPlants := e.Plants.Query(c.Pos, math.Max(10, sight))
 
 	// Update non physical attributes
-	c.Energy -= deltaTime * (SPEnergyDecrease*c.DNA.EnergyDecreaseRate() + SPIdleEnergyDecrease)
-	if c.Energy <= 0 {
+	c.Energy -= deltaTime * (SPEnergyDecrease * c.DNA.EnergyDecreaseRate())
+	if c.Energy <= c.DNA.DeathEnergy() {
 		c.Die(e)
 		return
 	}
@@ -169,8 +192,8 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	sensorFoodValues := make([]float64, 0)
 	sensorAnimalValues := make([]float64, 0)
 	sensorAngles := make([]float64, 0)
-	sensorWidth := math.Pi / 10
-	for sensorAngle := -math.Pi / 2; sensorAngle <= math.Pi/2; sensorAngle += sensorWidth {
+	sensorWidth := c.sensorAngles[1] - c.sensorAngles[0]
+	for _, sensorAngle := range c.sensorAngles {
 		// Find the sensor dir
 		sensorDir := pixel.V(0, 1).Rotated(c.Rot + sensorAngle)
 		// Set up the unsensed values
@@ -215,12 +238,21 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 		sensorAnimalValues = append(sensorAnimalValues, sensorAnimalValue)
 	}
 	c.debugFoodSensorValues = sensorFoodValues
-	c.debugSensorAngles = sensorAngles
+	c.sensorAngles = sensorAngles
 	c.debugAnimalSensorValues = sensorAnimalValues
 
+	// Calculate neural net
+	nnInput := make([]float64, 0)
+	nnInput = append(nnInput, sensorFoodValues...)
+	nnOutput := c.phenotype.Forward(nnInput)
+
+	// Parse the output
+	turn := nnOutput[0] * math.Pi / 2
+	power := nnOutput[1]/2 + 0.5
+
 	// Apply chosen motion
-	forwardsPush := c.DNA.Speed * SPPropulsionForce
-	resultantForce = resultantForce.Add(pixel.V(0, 1).Rotated(c.Rot).Scaled(forwardsPush))
+	forwardsPush := c.DNA.Speed * SPPropulsionForce * power
+	resultantForce = resultantForce.Add(pixel.V(0, 1).Rotated(c.Rot + turn).Scaled(forwardsPush))
 
 	// Add the force and apply drag
 	c.Vel = c.Vel.Add(resultantForce.Scaled(deltaTime)).Scaled(1 - drag*deltaTime)

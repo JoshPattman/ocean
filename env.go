@@ -113,8 +113,13 @@ func (e *Environment) ScatterFood(density float64) {
 	for i := 0; i < numFood; i++ {
 		position := pixel.V(0, math.Sqrt(rand.Float64())*float64(e.Radius)).Rotated(rand.Float64() * 2 * math.Pi)
 		if !e.sampleWallAt(position, true) {
-			f := NewFood(1, rand.Float64() > 0.5)
+			energy := rand.Float64()*2 + 1
+			if rand.Float64() < 0.1 {
+				energy *= 10
+			}
+			f := NewFood(energy, true)
 			f.Pos = position
+			f.Rot = rand.Float64() * 2 * math.Pi
 			e.Food.Add(f)
 		}
 	}
@@ -153,4 +158,8 @@ func lerpColor(a, b color.RGBA, t float64) color.RGBA {
 	cb := uint8(float64(ba)*(1-t) + float64(bb)*t)
 	ca := uint8(float64(aa)*(1-t) + float64(ab)*t)
 	return color.RGBA{cr, cg, cb, ca}
+}
+
+func randomColor() color.RGBA {
+	return color.RGBA{uint8(rand.Intn(255)), uint8(rand.Intn(255)), uint8(rand.Intn(255)), 255}
 }
