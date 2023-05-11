@@ -73,7 +73,9 @@ func (env *Environment) regrowPlants() {
 			p := pixel.V(x, y)
 			if !env.sampleWallAt(p, true) {
 				// Only if this is a free space with some distance to the side
-				if perlinGen.Noise2D(p.X/100, p.Y/100) > rand.Float64()/SPPlantDensity {
+				densityMult := perlinGen.Noise2D(p.X/100, p.Y/100)/2 + 0.5
+				densityMult = math.Pow(densityMult, 1/(1-SPPlantCoverage))
+				if rand.Float64() < SPPlantDensity*densityMult {
 					env.Plants.Add(&Plant{
 						Pos:       p,
 						Radius:    3 + rand.Float64()*2,

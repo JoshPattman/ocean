@@ -26,13 +26,14 @@ var (
 	SPDrag            float64 = 8
 	SPPropulsionForce float64 = 20
 	SPFoodDrainRate   float64 = 5
-	SPPlantDensity    float64 = 0.1
+	SPPlantDensity    float64 = 0.2
+	SPPlantCoverage   float64 = 0.8
 	SPPlantDrag       float64 = 3
 	SPFoodGrowDelay   float64 = 30
 	SPSightRange      float64 = 10
 	SPAngularDrag     float64 = 10
 	SPTurnForce       float64 = 10
-	SPPlantEnergy     float64 = 2
+	SPPlantEnergy     float64 = 3
 )
 
 var (
