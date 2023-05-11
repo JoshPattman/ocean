@@ -330,6 +330,9 @@ func (c *Creature) Child() *Creature {
 	if rand.Float64() < 0.1 {
 		goevo.AddRandomNeuron(gtCounter, dna.Genotype, goevo.ActivationSigmoid)
 	}
+	if rand.Float64() < 0.1 {
+		goevo.PruneRandomSynapse(dna.Genotype)
+	}
 	// Create creture
 	c1 := NewCreature(dna)
 	return c1
