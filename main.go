@@ -384,6 +384,7 @@ func run() {
 				fmt.Println("No creature DNA file found")
 			} else {
 				var dna CreatureDNA
+				dna.Genotype = goevo.NewGenotypeEmpty()
 				err = json.Unmarshal(serialisedDNA, &dna)
 				if err != nil {
 					fmt.Println(err)
