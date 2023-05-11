@@ -210,6 +210,12 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 				distToLine := math.Abs(dirToFood.Sub(sensorDir.Scaled(dotSensorDir)).Len())
 				if distToLine <= allowedDistFromLine {
 					newValue := 1 - distToFood/sight
+					if f.IsVeggie {
+						newValue = (1 - c.DNA.Diet) * newValue
+					}
+					if newValue > sensorFoodValue {
+						newValue = c.DNA.Diet * newValue
+					}
 					if newValue > sensorFoodValue {
 						sensorFoodValue = newValue
 					}
