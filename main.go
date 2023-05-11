@@ -27,6 +27,7 @@ var (
 	SPPlantDensity    float64 = 0.1
 	SPPlantDrag       float64 = 3
 	SPFoodGrowDelay   float64 = 30
+	SPSightRange      float64 = 10
 )
 
 var (
@@ -53,11 +54,12 @@ func run() {
 		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
 		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
 		c := NewCreature(CreatureDNA{
-			Size:     1 + (rand.Float64()-0.5)*2,
-			Speed:    1 + (rand.Float64()-0.5)*2,
-			Diet:     rand.Float64(),
-			Genotype: gt,
-			Color:    RandomHSV(),
+			Size:       1 + (rand.Float64()-0.5)*2,
+			Speed:      1 + (rand.Float64()-0.5)*2,
+			Diet:       rand.Float64(),
+			Genotype:   gt,
+			Color:      RandomHSV(),
+			SightRange: 1,
 		})
 		c.Pos = pixel.V(rand.Float64()*100-50, rand.Float64()*100-50)
 		env.Creatures.Add(c)
@@ -91,6 +93,18 @@ func run() {
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 	numCreaturesText := text.New(pixel.ZV, atlas)
 	timerText := text.New(pixel.ZV, atlas)
+
+	// Create creature stats elements
+	creatureStats := text.New(pixel.ZV, atlas)
+	var activeCreature *Creature
+	vis := goevo.NewGenotypeVisualiser()
+	vis.ImgSizeX = 400
+	vis.ImgSizeY = 400
+	vis.NeuronSize = 5
+	var currentCreatureBrainSprite *pixel.Sprite
+	instructionsText := text.New(pixel.ZV, atlas)
+	fmt.Fprintf(instructionsText, "(K)ill, (C)lone, (F)eed, (Grab)")
+	isActiveGrabbed := false
 
 	// Define player control variables
 	offset := pixel.V(500, 400)
@@ -216,15 +230,96 @@ func run() {
 		plantBatch.Draw(win)
 
 		// UI
-		// Clear UI
+		// Clear Stats
 		timerText.Clear()
 		numCreaturesText.Clear()
-		// Update UI
+		// Update Stats
 		fmt.Fprintf(timerText, "Sim Time: %s", time.Since(startTime).String())
 		fmt.Fprintf(numCreaturesText, "Num Creatures: %d", len(env.Creatures.Objects))
-		// Draw UI
+		// Draw Stats
 		timerText.Draw(win, pixel.IM.Moved(pixel.V(10, win.Bounds().H()-20)))
 		numCreaturesText.Draw(win, pixel.IM.Moved(pixel.V(10, win.Bounds().H()-40)))
+
+		// Creature UI
+		// Find the creature under the mouse
+		mousePos := win.MousePosition().Sub(win.Bounds().Center()).Scaled(1 / scale).Add(win.Bounds().Center()).Sub(offset)
+		if win.JustPressed(pixelgl.MouseButtonLeft) {
+			creatureUnderMouse := env.Creatures.Query(mousePos, 1)
+			isActiveGrabbed = false
+			if len(creatureUnderMouse) > 0 {
+				activeCreature = creatureUnderMouse[0]
+				nnimg := vis.DrawImage(activeCreature.DNA.Genotype)
+				nnPic := pixel.PictureDataFromImage(nnimg)
+				currentCreatureBrainSprite = pixel.NewSprite(nnPic, nnPic.Bounds())
+			} else {
+				activeCreature = nil
+				currentCreatureBrainSprite = nil
+			}
+		}
+		if activeCreature != nil {
+			// Update actions
+			if win.JustPressed(pixelgl.KeyK) {
+				activeCreature.Die(env)
+			}
+			if win.JustPressed(pixelgl.KeyC) {
+				newDNA := activeCreature.DNA
+				newDNA.Genotype = goevo.NewGenotypeCopy(activeCreature.DNA.Genotype)
+				newCreature := NewCreature(newDNA)
+				newCreature.Pos = activeCreature.Pos
+				env.Creatures.Add(newCreature)
+			}
+			if win.JustPressed(pixelgl.KeyF) {
+				activeCreature.Energy = activeCreature.DNA.MaxEnergy()
+			}
+			if win.JustPressed(pixelgl.KeyG) {
+				isActiveGrabbed = !isActiveGrabbed
+			}
+			if isActiveGrabbed {
+				activeCreature.Pos = mousePos
+				activeCreature.Vel = pixel.ZV
+			}
+			creatureStats.Clear()
+			creatureStats.Color = colornames.White
+			fmt.Fprintf(creatureStats, "Creature Stats:\n"+
+				"Energy ------------ %.2f/%.2f\n"+
+				"Energy (Adjusted) - %.2f/%.2f\n"+
+				"Size -------------- %.2f\n"+
+				"Speed ------------- %.2f\n",
+
+				activeCreature.Energy, activeCreature.DNA.MaxEnergy(),
+				activeCreature.Energy-activeCreature.DNA.DeathEnergy(), activeCreature.DNA.MaxEnergy()-activeCreature.DNA.DeathEnergy(),
+				activeCreature.DNA.Size,
+				activeCreature.DNA.Speed)
+
+			statsLoc := pixel.V(win.Bounds().W()-250, win.Bounds().H()-20)
+			// Background box
+			imd.Clear()
+			imd.Color = color.RGBA{0, 0, 0, 150}
+			imd.Push(statsLoc.Add(pixel.V(0, 10)))
+			imd.Push(statsLoc.Add(pixel.V(0, -60)))
+			imd.Push(statsLoc.Add(pixel.V(250, -60)))
+			imd.Push(statsLoc.Add(pixel.V(250, 10)))
+			imd.Polygon(0)
+			// Creature circle
+			imd.Color = colornames.White
+			imd.Push(activeCreature.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
+			imd.Circle(activeCreature.DNA.SightRange*SPSightRange*scale, 2)
+			imd.Draw(win)
+			// Stats
+			creatureStats.Draw(win, pixel.IM.Moved(statsLoc))
+			// Draw neural network
+			imd.Clear()
+			imd.Color = color.RGBA{0, 0, 0, 150}
+			imd.Push(pixel.V(win.Bounds().W()-200, 200))
+			imd.Push(pixel.V(win.Bounds().W()-200, 0))
+			imd.Push(pixel.V(win.Bounds().W(), 0))
+			imd.Push(pixel.V(win.Bounds().W(), 200))
+			imd.Polygon(0)
+			imd.Draw(win)
+			currentCreatureBrainSprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(pixel.V(win.Bounds().W()-100, 100)))
+			// Draw instructions
+			instructionsText.Draw(win, pixel.IM.Moved(pixel.V(win.Bounds().W()/2-100, 5)))
+		}
 
 		// Update window
 		win.Update()

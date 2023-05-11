@@ -23,8 +23,9 @@ type Creature struct {
 // No state, but carries info about how to make a creature
 type CreatureDNA struct {
 	// Multipliers
-	Size  float64
-	Speed float64
+	Size       float64
+	Speed      float64
+	SightRange float64
 
 	// Balances
 	Diet float64 // 0 = veggie, 1 = meat
@@ -98,7 +99,7 @@ func (c *Creature) Die(e *Environment) {
 
 func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Update knowlege
-	sight := 10.0
+	sight := c.DNA.SightRange * SPSightRange
 	neighbors := e.Creatures.Query(c.Pos, sight)
 	nearbyFood := e.Food.Query(c.Pos, sight)
 	// We just leave this as 10 because visibility does not make a difference to drag due to plants
