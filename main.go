@@ -103,7 +103,7 @@ func run() {
 	vis.NeuronSize = 5
 	var currentCreatureBrainSprite *pixel.Sprite
 	instructionsText := text.New(pixel.ZV, atlas)
-	fmt.Fprintf(instructionsText, "(K)ill, (C)lone, (F)eed, (Grab)")
+	fmt.Fprintf(instructionsText, "(K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color")
 	isActiveGrabbed := false
 
 	// Define player control variables
@@ -279,6 +279,10 @@ func run() {
 				activeCreature.Pos = mousePos
 				activeCreature.Vel = pixel.ZV
 			}
+			if win.JustPressed(pixelgl.KeyR) {
+				activeCreature.DNA.Color = RandomHSV()
+			}
+
 			creatureStats.Clear()
 			creatureStats.Color = colornames.White
 			fmt.Fprintf(creatureStats, "Creature Stats:\n"+
@@ -286,21 +290,23 @@ func run() {
 				"Energy (Adjusted) - %.2f/%.2f\n"+
 				"Size -------------- %.2f\n"+
 				"Speed ------------- %.2f\n"+
-				"Sight Range ------- %.2f\n",
+				"Sight Range ------- %.2f\n"+
+				"Diet -------------- %.2f\n",
 
 				activeCreature.Energy, activeCreature.DNA.MaxEnergy(),
 				activeCreature.Energy-activeCreature.DNA.DeathEnergy(), activeCreature.DNA.MaxEnergy()-activeCreature.DNA.DeathEnergy(),
 				activeCreature.DNA.Size,
 				activeCreature.DNA.Speed,
-				activeCreature.DNA.SightRange)
+				activeCreature.DNA.SightRange,
+				activeCreature.DNA.Diet)
 
 			statsLoc := pixel.V(win.Bounds().W()-250, win.Bounds().H()-20)
 			// Background box
 			imd.Clear()
 			imd.Color = color.RGBA{0, 0, 0, 150}
 			imd.Push(statsLoc.Add(pixel.V(0, 10)))
-			imd.Push(statsLoc.Add(pixel.V(0, -60)))
-			imd.Push(statsLoc.Add(pixel.V(250, -60)))
+			imd.Push(statsLoc.Add(pixel.V(0, -80)))
+			imd.Push(statsLoc.Add(pixel.V(250, -80)))
 			imd.Push(statsLoc.Add(pixel.V(250, 10)))
 			imd.Polygon(0)
 			// Creature circle
