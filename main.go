@@ -28,6 +28,8 @@ var (
 	SPPlantDrag       float64 = 3
 	SPFoodGrowDelay   float64 = 30
 	SPSightRange      float64 = 10
+	SPAngularDrag     float64 = 10
+	SPTurnForce       float64 = 10
 )
 
 var (

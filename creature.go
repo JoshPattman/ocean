@@ -13,6 +13,7 @@ type Creature struct {
 	Vel                     pixel.Vec
 	Radius                  float64
 	Rot                     float64
+	RotVel                  float64
 	Energy                  float64
 	DNA                     CreatureDNA
 	debugFoodSensorValues   []float64
@@ -149,6 +150,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 
 	// Setup the physics
 	resultantForce := pixel.ZV
+	resultantTorque := 0.0
 	drag := SPDrag
 
 	// Wall collisions
@@ -268,13 +270,15 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 
 	// Apply chosen motion
 	forwardsPush := c.DNA.Speed * SPPropulsionForce * power
-	resultantForce = resultantForce.Add(pixel.V(0, 1).Rotated(c.Rot + turn).Scaled(forwardsPush))
+	resultantForce = resultantForce.Add(pixel.V(0, 1).Rotated(c.Rot).Scaled(forwardsPush))
+	resultantTorque += turn * SPTurnForce
 
 	// Add the force and apply drag
 	c.Vel = c.Vel.Add(resultantForce.Scaled(deltaTime)).Scaled(1 - drag*deltaTime)
+	c.RotVel = (c.RotVel + resultantTorque*deltaTime) * (1 - SPAngularDrag*deltaTime)
 	// Update pos and rot
 	c.Pos = c.Pos.Add(c.Vel.Scaled(deltaTime))
-	c.Rot = c.Vel.Angle() - math.Pi/2
+	c.Rot += c.RotVel * deltaTime //c.Vel.Angle() - math.Pi/2
 }
 
 func (c *Creature) Child() *Creature {
