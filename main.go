@@ -122,7 +122,7 @@ func run() {
 	for !win.Closed() {
 		// Default instructions
 		instructionsText.Clear()
-		fmt.Fprintf(instructionsText, "Imp(o)rt Creature, S(c)atter Food")
+		fmt.Fprintf(instructionsText, "Imp(o)rt Creature, Sca(t)ter Food")
 		// Update user controls
 		if win.Pressed(pixelgl.KeyA) {
 			offset.X += 10 / scale
@@ -158,7 +158,7 @@ func run() {
 			env.Creatures.Add(c1)
 		}
 
-		if win.JustPressed(pixelgl.KeyC) {
+		if win.JustPressed(pixelgl.KeyT) {
 			env.ScatterFood(0.01)
 		}
 

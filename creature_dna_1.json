@@ -1,0 +1,187 @@
+{
+  "size": 2.0157702941917717,
+  "speed": 1.8003713292306887,
+  "sight_range": 0.9590046965271445,
+  "diet": 0.24384425756209524,
+  "brain": {
+    "num_in": 16,
+    "num_out": 2,
+    "neurons": {
+      "0": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "1": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "10": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "11": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "12": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "13": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "14": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "1432": {
+        "type": "hidden",
+        "activation": "sigmoid"
+      },
+      "15": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "16": {
+        "type": "output",
+        "activation": "tanh"
+      },
+      "17": {
+        "type": "output",
+        "activation": "tanh"
+      },
+      "2": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "3": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "4": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "5": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "6": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "7": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "8": {
+        "type": "input",
+        "activation": "linear"
+      },
+      "9": {
+        "type": "input",
+        "activation": "linear"
+      }
+    },
+    "synapses": {
+      "1061": {
+        "from_id": 9,
+        "to_id": 1432,
+        "weight": 0.8257738838224691
+      },
+      "1093": {
+        "from_id": 7,
+        "to_id": 16,
+        "weight": 0.9604966148766908
+      },
+      "1103": {
+        "from_id": 15,
+        "to_id": 16,
+        "weight": 0.3354485586755228
+      },
+      "1258": {
+        "from_id": 0,
+        "to_id": 16,
+        "weight": 0.8529909408170152
+      },
+      "1293": {
+        "from_id": 13,
+        "to_id": 17,
+        "weight": 0.4777002003939023
+      },
+      "1433": {
+        "from_id": 1432,
+        "to_id": 17,
+        "weight": 1.2071665595976793
+      },
+      "1705": {
+        "from_id": 14,
+        "to_id": 17,
+        "weight": -0.15925268803326564
+      },
+      "207": {
+        "from_id": 1,
+        "to_id": 16,
+        "weight": -1.8753736231788536
+      },
+      "208": {
+        "from_id": 13,
+        "to_id": 16,
+        "weight": -0.6457908539245681
+      },
+      "209": {
+        "from_id": 5,
+        "to_id": 16,
+        "weight": 0.3975853211544026
+      }
+    },
+    "neuron_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      1432,
+      16,
+      17
+    ],
+    "inverse_neuron_order": {
+      "0": 0,
+      "1": 1,
+      "10": 10,
+      "11": 11,
+      "12": 12,
+      "13": 13,
+      "14": 14,
+      "1432": 16,
+      "15": 15,
+      "16": 17,
+      "17": 18,
+      "2": 2,
+      "3": 3,
+      "4": 4,
+      "5": 5,
+      "6": 6,
+      "7": 7,
+      "8": 8,
+      "9": 9
+    }
+  },
+  "color": {
+    "h": 66.17205979458817,
+    "s": 0.506609182131245,
+    "v": 0.7259515441115827
+  }
+}
