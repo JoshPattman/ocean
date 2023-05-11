@@ -31,9 +31,9 @@ var (
 	SPPlantDrag       float64 = 3
 	SPFoodGrowDelay   float64 = 30
 	SPSightRange      float64 = 10
-	SPAngularDrag     float64 = 10
+	SPAngularDrag     float64 = 7
 	SPTurnForce       float64 = 10
-	SPPlantEnergy     float64 = 3
+	SPPlantEnergy     float64 = 5
 )
 
 var (
@@ -170,7 +170,7 @@ func run() {
 				// Check if there is already a food under us
 				if len(env.Food.Query(p.Pos, 0.1)) == 0 {
 					energy := math.Pow(p.Fertility, 3) * SPPlantEnergy
-					f := NewFood(energy*SPPlantEnergy, true)
+					f := NewFood(energy, true)
 					f.Pos = p.Pos
 					f.Rot = rand.Float64() * 2 * math.Pi
 					env.Food.Add(f)
