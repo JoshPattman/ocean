@@ -9,7 +9,9 @@ import (
 )
 
 type ColorHSV struct {
-	H, S, V float64
+	H float64 `json:"h"`
+	S float64 `json:"s"`
+	V float64 `json:"v"`
 }
 
 func RandomHSV() ColorHSV {

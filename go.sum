@@ -7,6 +7,8 @@ github.com/PerformLine/go-stockutil v1.9.3 h1:6Mty9/Zuy4LKtqn4qDJSfjnYEGsjNpIdTg
 github.com/PerformLine/go-stockutil v1.9.3/go.mod h1:4/8PF9Dp9BKke9UuDczslbKnZS0mj5dBLvJVNxEJvPw=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
+github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf h1:FPsprx82rdrX2jiKyS17BH6IrTmUBYqZa/CXT4uvb+I=
+github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf/go.mod h1:peYoMncQljjNS6tZwI9WVyQB3qZS6u79/N3mBOcnd3I=
 github.com/aquilax/go-perlin v1.1.0 h1:Gg+3jQ24wT4Y5GI7TCRLmYarzUG0k+n/JATFqOimb7s=
 github.com/aquilax/go-perlin v1.1.0/go.mod h1:z9Rl7EM4BZY0Ikp2fEN1I5mKSOJ26HQpk0O2TBdN2HE=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
@@ -126,6 +128,8 @@ github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:
 github.com/shogo82148/go-shuffle v0.0.0-20180218125048-27e6095f230d/go.mod h1:2htx6lmL0NGLHlO8ZCf+lQBGBHIbEujyywxJArf+2Yc=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
+github.com/sqweek/dialog v0.0.0-20220809060634-e981b270ebbf h1:pCxn3BCfu8n8VUhYl4zS1BftoZoYY0J4qVF3dqAQ4aU=
+github.com/sqweek/dialog v0.0.0-20220809060634-e981b270ebbf/go.mod h1:/qNPSY91qTz/8TgHEMioAUc6q7+3SOybeKczHMXFcXw=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=

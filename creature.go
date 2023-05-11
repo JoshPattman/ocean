@@ -25,18 +25,18 @@ type Creature struct {
 // No state, but carries info about how to make a creature
 type CreatureDNA struct {
 	// Multipliers
-	Size       float64
-	Speed      float64
-	SightRange float64
+	Size       float64 `json:"size"`
+	Speed      float64 `json:"speed"`
+	SightRange float64 `json:"sight_range"`
 
 	// Balances
-	Diet float64 // 0 = veggie, 1 = meat
+	Diet float64 `json:"diet"` // 0 = veggie, 1 = meat
 
 	// Brain
-	Genotype *goevo.Genotype
+	Genotype *goevo.Genotype `json:"brain"`
 
 	// Cosmetic
-	Color ColorHSV
+	Color ColorHSV `json:"color"`
 }
 
 func (c CreatureDNA) MaxEnergy() float64          { return c.Size * c.Size }

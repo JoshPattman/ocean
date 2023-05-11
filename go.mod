@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/faiface/glhf v0.0.0-20181018222622-82a6317ac380 // indirect
 	github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3 // indirect
@@ -24,6 +25,7 @@ require (
 	github.com/jbenet/go-base58 v0.0.0-20150317085156-6237cf65f3a6 // indirect
 	github.com/jdkato/prose v1.2.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/sqweek/dialog v0.0.0-20220809060634-e981b270ebbf // indirect
 	gopkg.in/neurosnap/sentences.v1 v1.0.6 // indirect
 	k8s.io/apimachinery v0.23.4 // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect

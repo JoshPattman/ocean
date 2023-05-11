@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"image/color"
 	"image/png"
+	"io/ioutil"
 	"math"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/JoshPattman/goevo"
@@ -109,7 +112,6 @@ func run() {
 	vis.NeuronSize = 5
 	var currentCreatureBrainSprite *pixel.Sprite
 	instructionsText := text.New(pixel.ZV, atlas)
-	fmt.Fprintf(instructionsText, "(K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color")
 	isActiveGrabbed := false
 
 	// Define player control variables
@@ -118,6 +120,9 @@ func run() {
 
 	// Main Loop
 	for !win.Closed() {
+		// Default instructions
+		instructionsText.Clear()
+		fmt.Fprintf(instructionsText, "Imp(o)rt Creature, S(c)atter Food")
 		// Update user controls
 		if win.Pressed(pixelgl.KeyA) {
 			offset.X += 10 / scale
@@ -224,6 +229,7 @@ func run() {
 		// Creature UI
 		// Find the creature under the mouse
 		mousePos := win.MousePosition().Sub(win.Bounds().Center()).Scaled(1 / scale).Add(win.Bounds().Center()).Sub(offset)
+		pressedNumKey := getJustPressedNumKey(win)
 		if win.JustPressed(pixelgl.MouseButtonLeft) {
 			creatureUnderMouse := env.Creatures.Query(mousePos, 1)
 			isActiveGrabbed = false
@@ -238,6 +244,8 @@ func run() {
 			}
 		}
 		if activeCreature != nil {
+			instructionsText.Clear()
+			fmt.Fprintf(instructionsText, "S(c)atter Food, (K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color, Ex(p)ort Creature, Imp(o)rt Creature")
 			// Update actions
 			if win.JustPressed(pixelgl.KeyK) {
 				activeCreature.Die(env)
@@ -251,7 +259,7 @@ func run() {
 			if win.JustPressed(pixelgl.KeyF) {
 				activeCreature.Energy = activeCreature.DNA.MaxEnergy()
 			}
-			if win.JustPressed(pixelgl.KeyG) {
+			if win.JustPressed(pixelgl.KeyG) || win.JustPressed(pixelgl.MouseButtonRight) {
 				isActiveGrabbed = !isActiveGrabbed
 			}
 			if isActiveGrabbed {
@@ -261,14 +269,29 @@ func run() {
 			if win.JustPressed(pixelgl.KeyR) {
 				activeCreature.DNA.Color = RandomHSV()
 			}
-			if win.JustPressed(pixelgl.Key1) {
+			if win.JustPressed(pixelgl.KeyF1) {
 				debugCreatureSensors = 0
 			}
-			if win.JustPressed(pixelgl.Key2) {
+			if win.JustPressed(pixelgl.KeyF2) {
 				debugCreatureSensors = 1
 			}
-			if win.JustPressed(pixelgl.Key3) {
+			if win.JustPressed(pixelgl.KeyF3) {
 				debugCreatureSensors = 2
+			}
+			if win.Pressed(pixelgl.KeyP) {
+				instructionsText.Clear()
+				fmt.Fprintf(instructionsText, "Press A Number Key To Save The Creature's DNA To That Slot")
+			}
+			if win.Pressed(pixelgl.KeyP) && pressedNumKey != -1 {
+				serialisedDNA, err := json.MarshalIndent(activeCreature.DNA, "", "  ")
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					err = ioutil.WriteFile("creature_dna_"+strconv.Itoa(pressedNumKey)+".json", serialisedDNA, 0644)
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
 			}
 
 			// Draw stats
@@ -337,9 +360,36 @@ func run() {
 			imd.Polygon(0)
 			imd.Draw(win)
 			currentCreatureBrainSprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(pixel.V(win.Bounds().W()-100, 200)))
-			// Draw instructions
-			instructionsText.Draw(win, pixel.IM.Moved(pixel.V(win.Bounds().W()/2-100, 5)))
+
 		}
+
+		// Check for import
+		if win.Pressed(pixelgl.KeyO) {
+			instructionsText.Clear()
+			fmt.Fprintf(instructionsText, "Press A Number Key To Load A Creature's DNA From That Slot")
+		}
+		if win.Pressed(pixelgl.KeyO) && pressedNumKey != -1 {
+			serialisedDNA, err := ioutil.ReadFile("creature_dna_" + strconv.Itoa(pressedNumKey) + ".json")
+			if err != nil {
+				fmt.Println("No creature DNA file found")
+			} else {
+				var dna CreatureDNA
+				err = json.Unmarshal(serialisedDNA, &dna)
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					activeCreature = NewCreature(dna)
+					env.Creatures.Add(activeCreature)
+					isActiveGrabbed = true
+					nnimg := vis.DrawImage(activeCreature.DNA.Genotype)
+					nnPic := pixel.PictureDataFromImage(nnimg)
+					currentCreatureBrainSprite = pixel.NewSprite(nnPic, nnPic.Bounds())
+				}
+			}
+		}
+
+		// Draw instructions
+		instructionsText.Draw(win, pixel.IM.Moved(pixel.V(math.Round(win.Bounds().W()/2-instructionsText.Bounds().Center().X), 5)))
 
 		// Update window
 		win.Update()
@@ -388,4 +438,30 @@ func getPlantSprite() (*pixel.Sprite, pixel.Picture) {
 	}
 	pic := pixel.PictureDataFromImage(img)
 	return pixel.NewSprite(pic, pic.Bounds()), pic
+}
+
+func getJustPressedNumKey(win *pixelgl.Window) int {
+	if win.JustPressed(pixelgl.Key1) {
+		return 1
+	} else if win.JustPressed(pixelgl.Key2) {
+		return 2
+	} else if win.JustPressed(pixelgl.Key3) {
+		return 3
+	} else if win.JustPressed(pixelgl.Key4) {
+		return 4
+	} else if win.JustPressed(pixelgl.Key5) {
+		return 5
+	} else if win.JustPressed(pixelgl.Key6) {
+		return 6
+	} else if win.JustPressed(pixelgl.Key7) {
+		return 7
+	} else if win.JustPressed(pixelgl.Key8) {
+		return 8
+	} else if win.JustPressed(pixelgl.Key9) {
+		return 9
+	} else if win.JustPressed(pixelgl.Key0) {
+		return 0
+	} else {
+		return -1
+	}
 }
