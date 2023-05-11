@@ -31,7 +31,7 @@ var (
 )
 
 var (
-	debugCreatureSensors bool = false
+	debugCreatureSensors int = 0 // 0 = off, 1 = food, 2 = creatures, 3 = plants
 )
 
 var (
@@ -103,7 +103,7 @@ func run() {
 	var activeCreature *Creature
 	vis := goevo.NewGenotypeVisualiser()
 	vis.ImgSizeX = 400
-	vis.ImgSizeY = 400
+	vis.ImgSizeY = 800
 	vis.NeuronSize = 5
 	var currentCreatureBrainSprite *pixel.Sprite
 	instructionsText := text.New(pixel.ZV, atlas)
@@ -197,19 +197,9 @@ func run() {
 		}
 		foodBatch.Draw(win)
 		// Draw creatures
-		imd.Clear()
 		for _, c := range env.Creatures.Objects {
 			creatureSprite.DrawColorMask(creatureBatch, pixel.IM.Scaled(pixel.ZV, c.Radius/creatureSprite.Frame().W()).Rotated(pixel.ZV, c.Rot).Moved(c.Pos).Moved(offset).Scaled(win.Bounds().Center(), scale), c.DNA.Color.ToColor())
-			if debugCreatureSensors {
-				for i := range c.sensorAngles {
-					imd.Color = lerpColor(colornames.Blue, colornames.Red, c.debugAnimalSensorValues[i])
-					imd.Push(c.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
-					imd.Push(c.Pos.Add(pixel.V(0, 10).Rotated(c.sensorAngles[i] + c.Rot)).Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
-					imd.Line(2)
-				}
-			}
 		}
-		imd.Draw(win)
 		creatureBatch.Draw(win)
 		// Draw plants
 		for _, p := range env.Plants.Objects {
@@ -269,7 +259,17 @@ func run() {
 			if win.JustPressed(pixelgl.KeyR) {
 				activeCreature.DNA.Color = RandomHSV()
 			}
+			if win.JustPressed(pixelgl.Key1) {
+				debugCreatureSensors = 0
+			}
+			if win.JustPressed(pixelgl.Key2) {
+				debugCreatureSensors = 1
+			}
+			if win.JustPressed(pixelgl.Key3) {
+				debugCreatureSensors = 2
+			}
 
+			// Draw stats
 			creatureStats.Clear()
 			creatureStats.Color = colornames.White
 			fmt.Fprintf(creatureStats, "Creature Stats:\n"+
@@ -301,18 +301,40 @@ func run() {
 			imd.Push(activeCreature.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
 			imd.Circle(activeCreature.DNA.SightRange*SPSightRange*scale, 2)
 			imd.Draw(win)
+			// Debug Sensors
+			if debugCreatureSensors != 0 {
+				imd.Clear()
+				var sensorValues []float64
+				var sensorOffColor color.RGBA
+				switch debugCreatureSensors {
+				case 1:
+					sensorValues = activeCreature.debugFoodSensorValues
+					sensorOffColor = colornames.Green
+				case 2:
+					sensorValues = activeCreature.debugAnimalSensorValues
+					sensorOffColor = colornames.Blue
+				}
+				for i := range activeCreature.sensorAngles {
+					imd.Color = lerpColor(sensorOffColor, colornames.Red, sensorValues[i])
+					imd.Push(activeCreature.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
+					imd.Push(activeCreature.Pos.Add(pixel.V(0, 10).Rotated(activeCreature.sensorAngles[i] + activeCreature.Rot)).Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
+					imd.Line(2)
+				}
+				imd.Draw(win)
+			}
 			// Stats
 			creatureStats.Draw(win, pixel.IM.Moved(statsLoc))
+
 			// Draw neural network
 			imd.Clear()
 			imd.Color = color.RGBA{0, 0, 0, 150}
-			imd.Push(pixel.V(win.Bounds().W()-200, 200))
+			imd.Push(pixel.V(win.Bounds().W()-200, 400))
 			imd.Push(pixel.V(win.Bounds().W()-200, 0))
 			imd.Push(pixel.V(win.Bounds().W(), 0))
-			imd.Push(pixel.V(win.Bounds().W(), 200))
+			imd.Push(pixel.V(win.Bounds().W(), 400))
 			imd.Polygon(0)
 			imd.Draw(win)
-			currentCreatureBrainSprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(pixel.V(win.Bounds().W()-100, 100)))
+			currentCreatureBrainSprite.Draw(win, pixel.IM.Scaled(pixel.ZV, 0.5).Moved(pixel.V(win.Bounds().W()-100, 200)))
 			// Draw instructions
 			instructionsText.Draw(win, pixel.IM.Moved(pixel.V(win.Bounds().W()/2-100, 5)))
 		}

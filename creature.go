@@ -61,10 +61,13 @@ func (c CreatureDNA) Copied() CreatureDNA {
 func NewCreature(dna CreatureDNA) *Creature {
 	dna = dna.Validated()
 	sa := make([]float64, 0)
-	sensorWidth := math.Pi / 10
-	for sensorAngle := -math.Pi / 2; sensorAngle <= math.Pi/2; sensorAngle += sensorWidth {
-		sa = append(sa, sensorAngle)
+	visionAngle := math.Pi
+	numSensors := 5.0
+	anglePerSensor := visionAngle / (numSensors - 1)
+	for a := -visionAngle / 2; a <= visionAngle/2; a += anglePerSensor {
+		sa = append(sa, a)
 	}
+
 	var pheno *goevo.Phenotype
 	if dna.Genotype != nil {
 		pheno = goevo.NewPhenotype(dna.Genotype)
@@ -219,8 +222,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 					newValue := 1 - distToFood/sight
 					if f.IsVeggie {
 						newValue = (1 - c.DNA.Diet) * newValue
-					}
-					if newValue > sensorFoodValue {
+					} else {
 						newValue = c.DNA.Diet * newValue
 					}
 					if newValue > sensorFoodValue {
