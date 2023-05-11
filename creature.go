@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 
 	"github.com/JoshPattman/goevo"
 	"github.com/faiface/pixel"
@@ -48,6 +49,12 @@ func (c CreatureDNA) Validated() CreatureDNA {
 	newDNA.Diet = math.Min(math.Max(c.Diet, 0), 1)
 	newDNA.Size = math.Max(c.Size, 0.1)
 	newDNA.Speed = math.Max(c.Speed, 0.1)
+	return newDNA
+}
+
+func (c CreatureDNA) Copied() CreatureDNA {
+	newDNA := c
+	newDNA.Genotype = goevo.NewGenotypeCopy(c.Genotype)
 	return newDNA
 }
 
@@ -266,4 +273,38 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Update pos and rot
 	c.Pos = c.Pos.Add(c.Vel.Scaled(deltaTime))
 	c.Rot = c.Vel.Angle() - math.Pi/2
+}
+
+func (c *Creature) Child() *Creature {
+	// Copy DNA
+	dna := c.DNA.Copied()
+	// Mutate traits
+	if rand.Float64() < 0.25 {
+		dna.Diet += (rand.Float64()*2 - 1) * 0.1
+	}
+	if rand.Float64() < 0.25 {
+		dna.Size += (rand.Float64()*2 - 1) * 0.1
+	}
+	if rand.Float64() < 0.25 {
+		dna.Speed += (rand.Float64()*2 - 1) * 0.1
+	}
+	if rand.Float64() < 0.25 {
+		dna.SightRange += (rand.Float64()*2 - 1) * 0.1
+	}
+	if rand.Float64() < 0.25 {
+		dna.Color = c.DNA.Color.Randomised(0.1)
+	}
+	// Mutate brain
+	for i := 0; i < rand.Intn(4); i++ {
+		goevo.MutateRandomSynapse(dna.Genotype, 0.3)
+	}
+	if rand.Float64() < 0.3 {
+		goevo.AddRandomSynapse(gtCounter, dna.Genotype, 0.5, false, 5)
+	}
+	if rand.Float64() < 0.1 {
+		goevo.AddRandomNeuron(gtCounter, dna.Genotype, goevo.ActivationSigmoid)
+	}
+	// Create creture
+	c1 := NewCreature(dna)
+	return c1
 }

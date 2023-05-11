@@ -34,6 +34,10 @@ var (
 	debugCreatureSensors bool = false
 )
 
+var (
+	gtCounter goevo.Counter
+)
+
 func main() {
 	pixelgl.Run(run)
 }
@@ -42,7 +46,7 @@ func run() {
 	startTime := time.Now()
 
 	// Setup goevo
-	gtCounter := goevo.NewAtomicCounter()
+	gtCounter = goevo.NewAtomicCounter()
 	gtOrig := goevo.NewGenotype(gtCounter, NewCreature(CreatureDNA{}).NumInputs(), 2, goevo.ActivationLinear, goevo.ActivationTanh)
 
 	// Setup Environment
@@ -136,23 +140,7 @@ func run() {
 		for _, c := range env.Creatures.Objects {
 			me := c.DNA.MaxEnergy()
 			if c.Energy >= me*0.8 && rand.Float64() < (1/60.0)/5 {
-				dna := c.DNA
-				dna.Diet += (rand.Float64()*2 - 1) * 0.1
-				dna.Size += (rand.Float64()*2 - 1) * 0.1
-				dna.Speed += (rand.Float64()*2 - 1) * 0.1
-				dna.SightRange += (rand.Float64()*2 - 1) * 0.1
-				dna.Color = c.DNA.Color.Randomised(0.1)
-				dna.Genotype = goevo.NewGenotypeCopy(c.DNA.Genotype)
-				for i := 0; i < rand.Intn(4); i++ {
-					goevo.MutateRandomSynapse(dna.Genotype, 0.3)
-				}
-				if rand.Float64() < 0.3 {
-					goevo.AddRandomSynapse(gtCounter, dna.Genotype, 0.5, false, 5)
-				}
-				if rand.Float64() < 0.1 {
-					goevo.AddRandomNeuron(gtCounter, dna.Genotype, goevo.ActivationSigmoid)
-				}
-				c1 := NewCreature(dna)
+				c1 := c.Child()
 				c1.Pos = c.Pos
 				c1.Energy = me * 0.79
 				c.Energy = me * 0.79
@@ -263,8 +251,7 @@ func run() {
 				activeCreature.Die(env)
 			}
 			if win.JustPressed(pixelgl.KeyC) {
-				newDNA := activeCreature.DNA
-				newDNA.Genotype = goevo.NewGenotypeCopy(activeCreature.DNA.Genotype)
+				newDNA := activeCreature.DNA.Copied()
 				newCreature := NewCreature(newDNA)
 				newCreature.Pos = activeCreature.Pos
 				env.Creatures.Add(newCreature)

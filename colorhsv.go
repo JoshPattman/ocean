@@ -21,7 +21,7 @@ func RandomHSV() ColorHSV {
 }
 
 func (c ColorHSV) Randomised(diff float64) ColorHSV {
-	h := math.Mod(float64(c.H)+360+(rand.Float64()-0.5)*diff*2, 360)
+	h := math.Mod(float64(c.H)+360+(rand.Float64()-0.5)*diff*2*360, 360)
 	s := math.Max(math.Min(float64(c.S)+(rand.Float64()-0.5)*diff*2, 1), 0.5)
 	v := math.Max(math.Min(float64(c.V)+(rand.Float64()-0.5)*diff*2, 1), 0.5)
 	return ColorHSV{
