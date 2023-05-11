@@ -66,6 +66,7 @@ func (env *Environment) regenerateTerrain() {
 func (env *Environment) regrowPlants() {
 	env.Plants = NewHashMap[*Plant](10)
 	perlinGen := perlin.NewPerlin(1.8, 2, 3, time.Now().UnixNano())
+	fertilityPerlin := perlin.NewPerlin(1.8, 2, 3, time.Now().UnixNano())
 	radiusFloat := float64(env.Radius)
 	for x := -radiusFloat; x < radiusFloat; x += 1 {
 		for y := -radiusFloat; y < radiusFloat; y += 1 {
@@ -74,10 +75,11 @@ func (env *Environment) regrowPlants() {
 				// Only if this is a free space with some distance to the side
 				if perlinGen.Noise2D(p.X/100, p.Y/100) > rand.Float64()/SPPlantDensity {
 					env.Plants.Add(&Plant{
-						Pos:     p,
-						Radius:  3 + rand.Float64()*2,
-						Rot:     rand.Float64() * 2 * math.Pi,
-						Shading: uint8(rand.Intn(100)),
+						Pos:       p,
+						Radius:    3 + rand.Float64()*2,
+						Rot:       rand.Float64() * 2 * math.Pi,
+						Shading:   rand.Float64()*0.5 + 0.5,
+						Fertility: fertilityPerlin.Noise2D(p.X/100+100000, p.Y/100+100000)/2 + 0.5,
 					})
 				}
 			}

@@ -3,10 +3,11 @@ package main
 import "github.com/faiface/pixel"
 
 type Plant struct {
-	Pos     pixel.Vec
-	Radius  float64
-	Rot     float64
-	Shading uint8
+	Pos       pixel.Vec
+	Radius    float64
+	Rot       float64
+	Shading   float64
+	Fertility float64
 }
 
 func (p *Plant) HMPos() pixel.Vec {

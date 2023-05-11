@@ -32,6 +32,7 @@ var (
 	SPSightRange      float64 = 10
 	SPAngularDrag     float64 = 10
 	SPTurnForce       float64 = 10
+	SPPlantEnergy     float64 = 2
 )
 
 var (
@@ -167,7 +168,8 @@ func run() {
 			if rand.Float64() < (1/60.0)/SPFoodGrowDelay {
 				// Check if there is already a food under us
 				if len(env.Food.Query(p.Pos, 0.1)) == 0 {
-					f := NewFood(0.5+rand.Float64()*2, true)
+					energy := math.Pow(p.Fertility, 3) * SPPlantEnergy
+					f := NewFood(energy*SPPlantEnergy, true)
 					f.Pos = p.Pos
 					f.Rot = rand.Float64() * 2 * math.Pi
 					env.Food.Add(f)
@@ -209,8 +211,10 @@ func run() {
 		creatureBatch.Draw(win)
 		// Draw plants
 		for _, p := range env.Plants.Objects {
-			l := 255 - p.Shading
-			plantSprite.DrawColorMask(plantBatch, pixel.IM.Rotated(pixel.ZV, p.Rot).Scaled(pixel.ZV, p.Radius/plantSprite.Frame().W()).Moved(p.Pos).Moved(offset).Scaled(win.Bounds().Center(), scale), color.RGBA{l, l, l, 255})
+			colorGreen := lerpColor(colornames.Lightgreen, colornames.Darkgreen, p.Shading)
+			colorBrown := lerpColor(colornames.Yellow, colornames.Brown, p.Shading)
+			colorMask := lerpColor(colorGreen, colorBrown, 1-p.Fertility)
+			plantSprite.DrawColorMask(plantBatch, pixel.IM.Rotated(pixel.ZV, p.Rot).Scaled(pixel.ZV, p.Radius/plantSprite.Frame().W()).Moved(p.Pos).Moved(offset).Scaled(win.Bounds().Center(), scale), colorMask)
 		}
 		plantBatch.Draw(win)
 
