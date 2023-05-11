@@ -159,7 +159,3 @@ func lerpColor(a, b color.RGBA, t float64) color.RGBA {
 	ca := uint8(float64(aa)*(1-t) + float64(ab)*t)
 	return color.RGBA{cr, cg, cb, ca}
 }
-
-func randomColor() color.RGBA {
-	return color.RGBA{uint8(rand.Intn(255)), uint8(rand.Intn(255)), uint8(rand.Intn(255)), 255}
-}
