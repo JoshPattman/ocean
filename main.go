@@ -157,7 +157,7 @@ func run() {
 			env.Creatures.Add(c1)
 		}
 
-		if win.JustPressed(pixelgl.KeyN) {
+		if win.JustPressed(pixelgl.KeyC) {
 			env.ScatterFood(0.01)
 		}
 
