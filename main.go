@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"image/color"
 	"image/png"
-	"io/ioutil"
 	"math"
 	"math/rand"
 	"os"
@@ -287,7 +286,7 @@ func run() {
 				if err != nil {
 					fmt.Println(err)
 				} else {
-					err = ioutil.WriteFile("creature_dna_"+strconv.Itoa(pressedNumKey)+".json", serialisedDNA, 0644)
+					err = os.WriteFile(getSaveSlotPath(pressedNumKey), serialisedDNA, 0644)
 					if err != nil {
 						fmt.Println(err)
 					}
@@ -369,7 +368,7 @@ func run() {
 			fmt.Fprintf(instructionsText, "Press A Number Key To Load A Creature's DNA From That Slot")
 		}
 		if win.Pressed(pixelgl.KeyO) && pressedNumKey != -1 {
-			serialisedDNA, err := ioutil.ReadFile("creature_dna_" + strconv.Itoa(pressedNumKey) + ".json")
+			serialisedDNA, err := os.ReadFile(getSaveSlotPath(pressedNumKey))
 			if err != nil {
 				fmt.Println("No creature DNA file found")
 			} else {
@@ -464,4 +463,8 @@ func getJustPressedNumKey(win *pixelgl.Window) int {
 	} else {
 		return -1
 	}
+}
+
+func getSaveSlotPath(slot int) string {
+	return "creature_dna_" + strconv.Itoa(slot) + ".json"
 }
