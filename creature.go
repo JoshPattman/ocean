@@ -38,7 +38,7 @@ type CreatureDNA struct {
 }
 
 func (c CreatureDNA) MaxEnergy() float64          { return c.Size * c.Size }
-func (c CreatureDNA) EnergyDecreaseRate() float64 { return c.Size + c.Speed }
+func (c CreatureDNA) EnergyDecreaseRate() float64 { return c.Size + c.Speed + c.SightRange }
 func (c CreatureDNA) FoodDrainRate() float64      { return c.Size }
 func (c CreatureDNA) PlantDrag() float64          { return c.Size }
 func (c CreatureDNA) DeathEnergy() float64        { return c.MaxEnergy() * 0.2 }

@@ -137,9 +137,11 @@ func run() {
 			me := c.DNA.MaxEnergy()
 			if c.Energy >= me*0.8 && rand.Float64() < (1/60.0)/5 {
 				dna := c.DNA
-				dna.Diet += (rand.Float64()*2 - 1) * 0.2
-				dna.Size += (rand.Float64()*2 - 1) * 0.2
-				dna.Speed += (rand.Float64()*2 - 1) * 0.2
+				dna.Diet += (rand.Float64()*2 - 1) * 0.1
+				dna.Size += (rand.Float64()*2 - 1) * 0.1
+				dna.Speed += (rand.Float64()*2 - 1) * 0.1
+				dna.SightRange += (rand.Float64()*2 - 1) * 0.1
+				dna.Color = c.DNA.Color.Randomised(0.1)
 				dna.Genotype = goevo.NewGenotypeCopy(c.DNA.Genotype)
 				for i := 0; i < rand.Intn(4); i++ {
 					goevo.MutateRandomSynapse(dna.Genotype, 0.3)
@@ -154,7 +156,6 @@ func run() {
 				c1.Pos = c.Pos
 				c1.Energy = me * 0.79
 				c.Energy = me * 0.79
-				c1.DNA.Color = c.DNA.Color.Randomised(0.1)
 				newCreatures = append(newCreatures, c1)
 			}
 		}
@@ -284,12 +285,14 @@ func run() {
 				"Energy ------------ %.2f/%.2f\n"+
 				"Energy (Adjusted) - %.2f/%.2f\n"+
 				"Size -------------- %.2f\n"+
-				"Speed ------------- %.2f\n",
+				"Speed ------------- %.2f\n"+
+				"Sight Range ------- %.2f\n",
 
 				activeCreature.Energy, activeCreature.DNA.MaxEnergy(),
 				activeCreature.Energy-activeCreature.DNA.DeathEnergy(), activeCreature.DNA.MaxEnergy()-activeCreature.DNA.DeathEnergy(),
 				activeCreature.DNA.Size,
-				activeCreature.DNA.Speed)
+				activeCreature.DNA.Speed,
+				activeCreature.DNA.SightRange)
 
 			statsLoc := pixel.V(win.Bounds().W()-250, win.Bounds().H()-20)
 			// Background box
