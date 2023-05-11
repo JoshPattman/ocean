@@ -35,7 +35,7 @@ var (
 )
 
 var (
-	debugCreatureSensors int = 0 // 0 = off, 1 = food, 2 = creatures, 3 = plants
+	debugCreatureSensors int = 0 // 0 = off, 1 = food, 2 = creatures, 3 = walls
 )
 
 var (
@@ -277,6 +277,9 @@ func run() {
 			if win.JustPressed(pixelgl.KeyF3) {
 				debugCreatureSensors = 2
 			}
+			if win.JustPressed(pixelgl.KeyF4) {
+				debugCreatureSensors = 3
+			}
 			if win.Pressed(pixelgl.KeyP) {
 				instructionsText.Clear()
 				fmt.Fprintf(instructionsText, "Press A Number Key To Save The Creature's DNA To That Slot")
@@ -337,6 +340,9 @@ func run() {
 				case 2:
 					sensorValues = activeCreature.debugAnimalSensorValues
 					sensorOffColor = colornames.Blue
+				case 3:
+					sensorValues = activeCreature.debugWallSensorValues
+					sensorOffColor = colornames.Black
 				}
 				for i := range activeCreature.sensorAngles {
 					imd.Color = lerpColor(sensorOffColor, colornames.Red, sensorValues[i])

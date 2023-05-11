@@ -18,6 +18,7 @@ type Creature struct {
 	DNA                     CreatureDNA
 	debugFoodSensorValues   []float64
 	debugAnimalSensorValues []float64
+	debugWallSensorValues   []float64
 	sensorAngles            []float64
 	phenotype               *goevo.Phenotype
 }
@@ -97,7 +98,7 @@ func (c *Creature) Eq(o HashMappable) bool {
 }
 
 func (c *Creature) NumInputs() int {
-	return len(c.sensorAngles)
+	return len(c.sensorAngles)*3 + 1
 }
 
 func (c *Creature) Die(e *Environment) {
@@ -204,6 +205,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Detect food
 	sensorFoodValues := make([]float64, 0)
 	sensorAnimalValues := make([]float64, 0)
+	sensorWallValues := make([]float64, 0)
 	sensorAngles := make([]float64, 0)
 	sensorWidth := c.sensorAngles[1] - c.sensorAngles[0]
 	for _, sensorAngle := range c.sensorAngles {
@@ -212,6 +214,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 		// Set up the unsensed values
 		sensorFoodValue := 0.0
 		sensorAnimalValue := 0.0
+		sensorWallValue := 0.0
 		// Check Food sensors
 		for _, f := range nearbyFood {
 			dirToFood := f.Pos.Sub(c.Pos)
@@ -250,18 +253,35 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 			}
 		}
 
+		// Check Wall sensors
+		sectionSamples := math.Round(sight * 2)
+		sectionSampleLength := sight / sectionSamples
+		for i := 0.0; i <= sectionSamples; i++ {
+			dist := i * sectionSampleLength
+			samplePos := c.Pos.Add(sensorDir.Scaled(dist))
+			if e.sampleWallAt(samplePos, false) {
+				sensorWallValue = 1 - dist/sight
+				break
+			}
+		}
+
 		// Add the values to the list
 		sensorAngles = append(sensorAngles, sensorAngle)
 		sensorFoodValues = append(sensorFoodValues, sensorFoodValue)
 		sensorAnimalValues = append(sensorAnimalValues, sensorAnimalValue)
+		sensorWallValues = append(sensorWallValues, sensorWallValue)
 	}
 	c.debugFoodSensorValues = sensorFoodValues
 	c.sensorAngles = sensorAngles
 	c.debugAnimalSensorValues = sensorAnimalValues
+	c.debugWallSensorValues = sensorWallValues
 
 	// Calculate neural net
 	nnInput := make([]float64, 0)
 	nnInput = append(nnInput, sensorFoodValues...)
+	nnInput = append(nnInput, sensorAnimalValues...)
+	nnInput = append(nnInput, sensorWallValues...)
+	nnInput = append(nnInput, 1)
 	nnOutput := c.phenotype.Forward(nnInput)
 
 	// Parse the output
