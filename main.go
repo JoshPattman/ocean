@@ -116,7 +116,7 @@ func run() {
 	for !win.Closed() {
 		// Default instructions
 		instructionsText.Clear()
-		fmt.Fprintf(instructionsText, "Imp(o)rt Creature, Sca(t)ter Food, (L)oad Sim Params")
+		fmt.Fprintf(instructionsText, "(I)mport Creature, Sca(t)ter Food, (L)oad Sim Params")
 		// Update user controls
 		if win.Pressed(pixelgl.KeyA) {
 			offset.X += 10 / scale
@@ -248,7 +248,7 @@ func run() {
 		}
 		if activeCreature != nil {
 			instructionsText.Clear()
-			fmt.Fprintf(instructionsText, "S(c)atter Food, (K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color, Ex(p)ort Creature, Imp(o)rt Creature, (L)oad Sim Params")
+			fmt.Fprintf(instructionsText, "S(c)atter Food, (K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color, Exp(o)rt Creature, (I)mport Creature, (L)oad Sim Params")
 			// Update actions
 			if win.JustPressed(pixelgl.KeyK) {
 				activeCreature.Die(env)
@@ -284,11 +284,11 @@ func run() {
 			if win.JustPressed(pixelgl.KeyF4) {
 				debugCreatureSensors = 3
 			}
-			if win.Pressed(pixelgl.KeyP) {
+			if win.Pressed(pixelgl.KeyI) {
 				instructionsText.Clear()
 				fmt.Fprintf(instructionsText, "Press A Number Key To Save The Creature's DNA To That Slot")
 			}
-			if win.Pressed(pixelgl.KeyP) && pressedNumKey != -1 {
+			if win.Pressed(pixelgl.KeyO) && pressedNumKey != -1 {
 				serialisedDNA, err := json.MarshalIndent(activeCreature.DNA, "", "  ")
 				if err != nil {
 					fmt.Println(err)
@@ -374,11 +374,11 @@ func run() {
 		}
 
 		// Check for import
-		if win.Pressed(pixelgl.KeyO) {
+		if win.Pressed(pixelgl.KeyI) {
 			instructionsText.Clear()
 			fmt.Fprintf(instructionsText, "Press A Number Key To Load A Creature's DNA From That Slot")
 		}
-		if win.Pressed(pixelgl.KeyO) && pressedNumKey != -1 {
+		if win.Pressed(pixelgl.KeyI) && pressedNumKey != -1 {
 			serialisedDNA, err := os.ReadFile(getSaveSlotPath(pressedNumKey))
 			if err != nil {
 				fmt.Println("No creature DNA file found")
