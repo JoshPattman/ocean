@@ -49,7 +49,7 @@ func run() {
 	gtOrig := goevo.NewGenotype(gtCounter, NewCreature(CreatureDNA{}).NumInputs(), 2, goevo.ActivationLinear, goevo.ActivationTanh)
 
 	// Setup Environment
-	env := NewEnvironment(400)
+	env := NewEnvironment(GlobalSP.MapRadius)
 	//env.ScatterFood(0.01)
 	for i := 0; i < 300; i++ {
 		gt := goevo.NewGenotypeCopy(gtOrig)

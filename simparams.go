@@ -4,6 +4,7 @@ type SimulationParameters struct {
 	// Environment generation
 	PlantDensity  float64 `json:"plant_density"`  // The number of plants per unit area
 	PlantCoverage float64 `json:"plant_coverage"` // The percentage of the map covered in plants
+	MapRadius     int     `json:"map_radius"`     // The radius of the map
 
 	// Plant growth
 	FoodGrowthDelay float64 `json:"food_growth_delay"` // The number of seconds between plant growth ticks
@@ -29,6 +30,8 @@ type SimulationParameters struct {
 }
 
 var GlobalSP = SimulationParameters{
+	MapRadius: 400,
+
 	PlantDensity:  0.3,
 	PlantCoverage: 0.8,
 
@@ -37,7 +40,7 @@ var GlobalSP = SimulationParameters{
 
 	MaxEnergy:   1,
 	PushForce:   20,
-	Metabolism:  0.02,
+	Metabolism:  0.015,
 	Vision:      10,
 	PlantDrag:   3,
 	FoodEatRate: 5,
