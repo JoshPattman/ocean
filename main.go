@@ -25,7 +25,7 @@ var (
 )
 
 var (
-	gtCounter goevo.Counter
+	gtCounter *SaveLoadCounter
 )
 
 func main() {
@@ -45,7 +45,7 @@ func run() {
 	startTime := time.Now()
 
 	// Setup goevo
-	gtCounter = goevo.NewAtomicCounter()
+	gtCounter = &SaveLoadCounter{}
 	gtOrig := goevo.NewGenotype(gtCounter, NewCreature(CreatureDNA{}).NumInputs(), 2, goevo.ActivationLinear, goevo.ActivationTanh)
 
 	// Setup Environment
@@ -396,6 +396,9 @@ func run() {
 					nnPic := pixel.PictureDataFromImage(nnimg)
 					currentCreatureBrainSprite = pixel.NewSprite(nnPic, nnPic.Bounds())
 				}
+				fmt.Println("Counter was", gtCounter.c)
+				gtCounter.SafeWith(dna.Genotype)
+				fmt.Println("Counter is", gtCounter.c)
 			}
 		}
 
