@@ -1,0 +1,18 @@
+{
+  "plant_density": 0.3,
+  "plant_coverage": 0.8,
+  "food_growth_delay": 30,
+  "grown_food_energy": 5,
+  "max_energy": 1,
+  "push_force": 20,
+  "metabolism": 0.02,
+  "vision": 10,
+  "plant_drag": 3,
+  "food_eat_rate": 5,
+  "drag": 8,
+  "angular_drag": 7,
+  "rotate_force": 10,
+  "conversion_efficiency_slope_plant": 0.5,
+  "conversion_efficiency_slope_meat": 0.5,
+  "death_energy_threshold": 0.2
+}

@@ -29,6 +29,15 @@ var (
 )
 
 func main() {
+	ensureDataDir()
+	err := reloadSimParams()
+	if err != nil {
+		fmt.Println(err)
+		data, _ := json.MarshalIndent(GlobalSP, "", "  ")
+		if err := os.WriteFile(getParamsPath(), data, 0644); err != nil {
+			panic(err)
+		}
+	}
 	pixelgl.Run(run)
 }
 
@@ -107,7 +116,7 @@ func run() {
 	for !win.Closed() {
 		// Default instructions
 		instructionsText.Clear()
-		fmt.Fprintf(instructionsText, "Imp(o)rt Creature, Sca(t)ter Food")
+		fmt.Fprintf(instructionsText, "Imp(o)rt Creature, Sca(t)ter Food, (L)oad Sim Params")
 		// Update user controls
 		if win.Pressed(pixelgl.KeyA) {
 			offset.X += 10 / scale
@@ -126,6 +135,12 @@ func run() {
 		}
 		if win.Pressed(pixelgl.KeyE) {
 			scale *= 1.01
+		}
+		if win.Pressed(pixelgl.KeyL) {
+			err := reloadSimParams()
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 
 		newCreatures := make([]*Creature, 0)
@@ -233,7 +248,7 @@ func run() {
 		}
 		if activeCreature != nil {
 			instructionsText.Clear()
-			fmt.Fprintf(instructionsText, "S(c)atter Food, (K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color, Ex(p)ort Creature, Imp(o)rt Creature")
+			fmt.Fprintf(instructionsText, "S(c)atter Food, (K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color, Ex(p)ort Creature, Imp(o)rt Creature, (L)oad Sim Params")
 			// Update actions
 			if win.JustPressed(pixelgl.KeyK) {
 				activeCreature.Die(env)
@@ -278,6 +293,7 @@ func run() {
 				if err != nil {
 					fmt.Println(err)
 				} else {
+					ensureDataDir()
 					err = os.WriteFile(getSaveSlotPath(pressedNumKey), serialisedDNA, 0644)
 					if err != nil {
 						fmt.Println(err)
@@ -461,6 +477,28 @@ func getJustPressedNumKey(win *pixelgl.Window) int {
 	}
 }
 
+func ensureDataDir() {
+	if _, err := os.Stat("data"); os.IsNotExist(err) {
+		os.Mkdir("data", 0755)
+	}
+}
+
 func getSaveSlotPath(slot int) string {
-	return "creature_dna_" + strconv.Itoa(slot) + ".json"
+	return "data/creature_dna_" + strconv.Itoa(slot) + ".json"
+}
+
+func getParamsPath() string {
+	return "data/simulation_params.json"
+}
+
+func reloadSimParams() error {
+	data, err := os.ReadFile(getParamsPath())
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(data, &GlobalSP)
+	if err != nil {
+		return err
+	}
+	return nil
 }
