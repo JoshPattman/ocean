@@ -24,6 +24,8 @@ type SimulationParameters struct {
 	ConversionEfficiencySlopePlant float64 `json:"conversion_efficiency_slope_plant"` // The slope of the conversion efficiency curve for plants
 	ConversionEfficiencySlopeMeat  float64 `json:"conversion_efficiency_slope_meat"`  // The slope of the conversion efficiency curve for meat
 	DeathEnergyThreshold           float64 `json:"death_energy_threshold"`            // The percent energy a creature must have to survive
+	PredatorEfficiencySlope        float64 `json:"predator_efficiency_slope"`         // The slope of the predator efficiency curve. At 0, effect is linear. At 1, only a perfect predator gets a boost
+	PredatorMetabolismPercentage   float64 `json:"predator_percentage"`               // The maximum percentage drop in metabolism of predators
 }
 
 var GlobalSP = SimulationParameters{
@@ -46,4 +48,6 @@ var GlobalSP = SimulationParameters{
 	ConversionEfficiencySlopePlant: 0.5,
 	ConversionEfficiencySlopeMeat:  0.5,
 	DeathEnergyThreshold:           0.2,
+	PredatorEfficiencySlope:        0.7,
+	PredatorMetabolismPercentage:   0.5,
 }

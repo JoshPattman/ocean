@@ -29,11 +29,14 @@ func (c CreatureDNA) MeatConversionEfficiency() float64 {
 func (c CreatureDNA) PlantConversionEfficiency() float64 {
 	return math.Pow(1-c.Diet, 1/(1-GlobalSP.ConversionEfficiencySlopePlant))
 }
+func (c CreatureDNA) PredatoryMetabolismMultiplier() float64 {
+	return 1 - (GlobalSP.PredatorMetabolismPercentage * math.Pow(c.Diet, 1/(1-GlobalSP.PredatorEfficiencySlope)))
+}
 func (c CreatureDNA) MaxEnergy() float64 {
 	return GlobalSP.MaxEnergy * (c.Size * c.Size)
 }
 func (c CreatureDNA) Metabolism() float64 {
-	return GlobalSP.Metabolism * (c.Size*c.Size + c.Vision + c.Speed)
+	return GlobalSP.Metabolism * (c.Size*c.Size + c.Vision + c.Speed) * c.PredatoryMetabolismMultiplier()
 }
 func (c CreatureDNA) FoodEatRate() float64 {
 	return GlobalSP.FoodEatRate * c.Size
