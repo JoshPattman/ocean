@@ -23,46 +23,6 @@ type Creature struct {
 	phenotype               *goevo.Phenotype
 }
 
-// No state, but carries info about how to make a creature
-type CreatureDNA struct {
-	// Multipliers
-	Size       float64 `json:"size"`
-	Speed      float64 `json:"speed"`
-	SightRange float64 `json:"sight_range"`
-
-	// Balances
-	Diet float64 `json:"diet"` // 0 = veggie, 1 = meat
-
-	// Brain
-	Genotype *goevo.Genotype `json:"brain"`
-
-	// Cosmetic
-	Color ColorHSV `json:"color"`
-}
-
-func (c CreatureDNA) MaxEnergy() float64 { return c.Size * c.Size }
-func (c CreatureDNA) EnergyDecreaseRate() float64 {
-	return (c.Size + c.Speed + c.SightRange) *
-		(1 - (1-SPCarnivoreMetabolismMultiplier)*c.Diet) // This part means that as diet tends to carnivore, the metabolism is multiplied by a closer number to SPCarnivoreMetabolismMultiplier
-}
-func (c CreatureDNA) FoodDrainRate() float64 { return c.Size }
-func (c CreatureDNA) PlantDrag() float64     { return c.Size }
-func (c CreatureDNA) DeathEnergy() float64   { return c.MaxEnergy() * 0.2 }
-
-func (c CreatureDNA) Validated() CreatureDNA {
-	newDNA := c
-	newDNA.Diet = math.Min(math.Max(c.Diet, 0), 1)
-	newDNA.Size = math.Max(c.Size, 0.1)
-	newDNA.Speed = math.Max(c.Speed, 0.1)
-	return newDNA
-}
-
-func (c CreatureDNA) Copied() CreatureDNA {
-	newDNA := c
-	newDNA.Genotype = goevo.NewGenotypeCopy(c.Genotype)
-	return newDNA
-}
-
 func NewCreature(dna CreatureDNA) *Creature {
 	dna = dna.Validated()
 	sa := make([]float64, 0)
@@ -114,14 +74,14 @@ func (c *Creature) Die(e *Environment) {
 
 func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Update knowlege
-	sight := c.DNA.SightRange * SPSightRange
+	sight := c.DNA.VisionRange()
 	neighbors := e.Creatures.Query(c.Pos, sight)
 	nearbyFood := e.Food.Query(c.Pos, sight)
 	// We just leave this as 10 because visibility does not make a difference to drag due to plants
 	nearbyPlants := e.Plants.Query(c.Pos, math.Max(10, sight))
 
 	// Update non physical attributes
-	c.Energy -= deltaTime * (SPEnergyDecrease * c.DNA.EnergyDecreaseRate())
+	c.Energy -= deltaTime * c.DNA.Metabolism()
 	if c.Energy <= c.DNA.DeathEnergy() {
 		c.Die(e)
 		return
@@ -132,16 +92,16 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 		offset := c.Pos.Sub(f.Pos)
 		if offset.Len() < (c.Radius+f.Radius())/2 {
 			// Take energy from food
-			takenEnergy := math.Min(f.Energy, SPFoodDrainRate*c.DNA.FoodDrainRate()*deltaTime)
+			takenEnergy := math.Min(f.Energy, c.DNA.FoodEatRate()*deltaTime)
 			f.Energy -= takenEnergy
 			if f.Energy <= 0 {
 				e.Food.Remove(f)
 			}
 			// Use that energy
 			if f.IsVeggie {
-				c.Energy += (1 - c.DNA.Diet) * takenEnergy
+				c.Energy += c.DNA.PlantConversionEfficiency() * takenEnergy
 			} else {
-				c.Energy += c.DNA.Diet * takenEnergy
+				c.Energy += c.DNA.MeatConversionEfficiency() * takenEnergy
 			}
 			// Push the food away
 			lenDiff := offset.Len() - (c.Radius+f.Radius())/2
@@ -155,7 +115,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Setup the physics
 	resultantForce := pixel.ZV
 	resultantTorque := 0.0
-	drag := SPDrag
+	drag := GlobalSP.Drag
 
 	// Wall collisions
 	{
@@ -200,7 +160,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	for _, p := range nearbyPlants {
 		offset := c.Pos.Sub(p.Pos)
 		if offset.Len() < (c.Radius+p.Radius)/2 {
-			drag += SPPlantDrag * c.DNA.PlantDrag()
+			drag += c.DNA.PlantDrag()
 			break
 		}
 	}
@@ -229,9 +189,9 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 				if distToLine <= allowedDistFromLine {
 					newValue := 1 - distToFood/sight
 					if f.IsVeggie {
-						newValue = (1 - c.DNA.Diet) * newValue
+						newValue = c.DNA.PlantConversionEfficiency() * newValue
 					} else {
-						newValue = c.DNA.Diet * newValue
+						newValue = c.DNA.MeatConversionEfficiency() * newValue
 					}
 					if newValue > sensorFoodValue {
 						sensorFoodValue = newValue
@@ -292,13 +252,13 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	power := nnOutput[1]/2 + 0.5
 
 	// Apply chosen motion
-	forwardsPush := c.DNA.Speed * SPPropulsionForce * power
+	forwardsPush := c.DNA.PushForce() * power
 	resultantForce = resultantForce.Add(pixel.V(0, 1).Rotated(c.Rot).Scaled(forwardsPush))
-	resultantTorque += turn * SPTurnForce
+	resultantTorque += turn * GlobalSP.RotateForce
 
 	// Add the force and apply drag
 	c.Vel = c.Vel.Add(resultantForce.Scaled(deltaTime)).Scaled(1 - drag*deltaTime)
-	c.RotVel = (c.RotVel + resultantTorque*deltaTime) * (1 - SPAngularDrag*deltaTime)
+	c.RotVel = (c.RotVel + resultantTorque*deltaTime) * (1 - GlobalSP.AngularDrag*deltaTime)
 	// Update pos and rot
 	c.Pos = c.Pos.Add(c.Vel.Scaled(deltaTime))
 	c.Rot += c.RotVel * deltaTime //c.Vel.Angle() - math.Pi/2
@@ -318,7 +278,7 @@ func (c *Creature) Child() *Creature {
 		dna.Speed += (rand.Float64()*2 - 1) * 0.1
 	}
 	if rand.Float64() < 0.25 {
-		dna.SightRange += (rand.Float64()*2 - 1) * 0.1
+		dna.Vision += (rand.Float64()*2 - 1) * 0.1
 	}
 	if rand.Float64() < 0.25 {
 		dna.Color = c.DNA.Color.Randomised(0.1)

@@ -20,23 +20,6 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
-// Global Sim Params
-var (
-	SPEnergyDecrease                float64 = 0.02
-	SPDrag                          float64 = 8
-	SPPropulsionForce               float64 = 20
-	SPFoodDrainRate                 float64 = 5
-	SPPlantDensity                  float64 = 0.3
-	SPPlantCoverage                 float64 = 0.8
-	SPPlantDrag                     float64 = 3
-	SPFoodGrowDelay                 float64 = 30
-	SPSightRange                    float64 = 10
-	SPAngularDrag                   float64 = 7
-	SPTurnForce                     float64 = 10
-	SPPlantEnergy                   float64 = 5
-	SPCarnivoreMetabolismMultiplier float64 = 0.5
-)
-
 var (
 	debugCreatureSensors int = 0 // 0 = off, 1 = food, 2 = creatures, 3 = walls
 )
@@ -65,12 +48,12 @@ func run() {
 		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
 		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
 		c := NewCreature(CreatureDNA{
-			Size:       1 + (rand.Float64()-0.5)*2,
-			Speed:      1 + (rand.Float64()-0.5)*2,
-			Diet:       rand.Float64(),
-			Genotype:   gt,
-			Color:      RandomHSV(),
-			SightRange: 1,
+			Size:     1 + (rand.Float64()-0.5)*2,
+			Speed:    1 + (rand.Float64()-0.5)*2,
+			Diet:     rand.Float64(),
+			Genotype: gt,
+			Color:    RandomHSV(),
+			Vision:   1,
 		})
 		c.Pos = pixel.V(rand.Float64()*100-50, rand.Float64()*100-50)
 		env.Creatures.Add(c)
@@ -167,10 +150,10 @@ func run() {
 		// Update Sim
 		// Grow new food on plants
 		for _, p := range env.Plants.Objects {
-			if rand.Float64() < (1/60.0)/SPFoodGrowDelay {
+			if rand.Float64() < (1/60.0)/GlobalSP.FoodGrowthDelay {
 				// Check if there is already a food under us
 				if len(env.Food.Query(p.Pos, 0.1)) == 0 {
-					energy := math.Pow(p.Fertility, 3) * SPPlantEnergy
+					energy := math.Pow(p.Fertility, 3) * GlobalSP.GrownFoodEnergy
 					f := NewFood(energy, true)
 					f.Pos = p.Pos
 					f.Rot = rand.Float64() * 2 * math.Pi
@@ -317,7 +300,7 @@ func run() {
 				activeCreature.Energy-activeCreature.DNA.DeathEnergy(), activeCreature.DNA.MaxEnergy()-activeCreature.DNA.DeathEnergy(),
 				activeCreature.DNA.Size,
 				activeCreature.DNA.Speed,
-				activeCreature.DNA.SightRange,
+				activeCreature.DNA.Vision,
 				activeCreature.DNA.Diet)
 
 			statsLoc := pixel.V(win.Bounds().W()-250, win.Bounds().H()-20)
@@ -332,7 +315,7 @@ func run() {
 			// Creature circle
 			imd.Color = colornames.White
 			imd.Push(activeCreature.Pos.Add(offset).Sub(win.Bounds().Center()).Scaled(scale).Add(win.Bounds().Center()))
-			imd.Circle(activeCreature.DNA.SightRange*SPSightRange*scale, 2)
+			imd.Circle(activeCreature.DNA.VisionRange()*scale, 2)
 			imd.Draw(win)
 			// Debug Sensors
 			if debugCreatureSensors != 0 {
