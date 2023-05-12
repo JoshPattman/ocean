@@ -22,18 +22,19 @@ import (
 
 // Global Sim Params
 var (
-	SPEnergyDecrease  float64 = 0.02
-	SPDrag            float64 = 8
-	SPPropulsionForce float64 = 20
-	SPFoodDrainRate   float64 = 5
-	SPPlantDensity    float64 = 0.2
-	SPPlantCoverage   float64 = 0.8
-	SPPlantDrag       float64 = 3
-	SPFoodGrowDelay   float64 = 30
-	SPSightRange      float64 = 10
-	SPAngularDrag     float64 = 7
-	SPTurnForce       float64 = 10
-	SPPlantEnergy     float64 = 5
+	SPEnergyDecrease                float64 = 0.02
+	SPDrag                          float64 = 8
+	SPPropulsionForce               float64 = 20
+	SPFoodDrainRate                 float64 = 5
+	SPPlantDensity                  float64 = 0.3
+	SPPlantCoverage                 float64 = 0.8
+	SPPlantDrag                     float64 = 3
+	SPFoodGrowDelay                 float64 = 30
+	SPSightRange                    float64 = 10
+	SPAngularDrag                   float64 = 7
+	SPTurnForce                     float64 = 10
+	SPPlantEnergy                   float64 = 5
+	SPCarnivoreMetabolismMultiplier float64 = 0.5
 )
 
 var (

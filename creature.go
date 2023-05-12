@@ -40,11 +40,14 @@ type CreatureDNA struct {
 	Color ColorHSV `json:"color"`
 }
 
-func (c CreatureDNA) MaxEnergy() float64          { return c.Size * c.Size }
-func (c CreatureDNA) EnergyDecreaseRate() float64 { return c.Size + c.Speed + c.SightRange }
-func (c CreatureDNA) FoodDrainRate() float64      { return c.Size }
-func (c CreatureDNA) PlantDrag() float64          { return c.Size }
-func (c CreatureDNA) DeathEnergy() float64        { return c.MaxEnergy() * 0.2 }
+func (c CreatureDNA) MaxEnergy() float64 { return c.Size * c.Size }
+func (c CreatureDNA) EnergyDecreaseRate() float64 {
+	return (c.Size + c.Speed + c.SightRange) *
+		(1 - (1-SPCarnivoreMetabolismMultiplier)*c.Diet) // This part means that as diet tends to carnivore, the metabolism is multiplied by a closer number to SPCarnivoreMetabolismMultiplier
+}
+func (c CreatureDNA) FoodDrainRate() float64 { return c.Size }
+func (c CreatureDNA) PlantDrag() float64     { return c.Size }
+func (c CreatureDNA) DeathEnergy() float64   { return c.MaxEnergy() * 0.2 }
 
 func (c CreatureDNA) Validated() CreatureDNA {
 	newDNA := c
