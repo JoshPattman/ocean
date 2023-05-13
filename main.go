@@ -284,7 +284,7 @@ func run() {
 			if win.JustPressed(pixelgl.KeyF4) {
 				debugCreatureSensors = 3
 			}
-			if win.Pressed(pixelgl.KeyI) {
+			if win.Pressed(pixelgl.KeyO) {
 				instructionsText.Clear()
 				fmt.Fprintf(instructionsText, "Press A Number Key To Save The Creature's DNA To That Slot")
 			}
