@@ -72,6 +72,10 @@ func (c *Creature) Die(e *Environment) {
 	e.Food.Add(f)
 }
 
+func (c *Creature) Fwd() pixel.Vec {
+	return pixel.V(0, 1).Rotated(c.Rot)
+}
+
 func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Update knowlege
 	sight := c.DNA.VisionRange()
@@ -87,25 +91,27 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 		return
 	}
 
-	// Eat food if we are touching
+	// Eat food if we are touching within an angle
 	for _, f := range nearbyFood {
 		offset := c.Pos.Sub(f.Pos)
 		if offset.Len() < (c.Radius+f.Radius())/2 {
-			// Take energy from food
-			takenEnergy := math.Min(f.Energy, c.DNA.FoodEatRate()*deltaTime)
-			f.Energy -= takenEnergy
-			if f.Energy <= 0 {
-				e.Food.Remove(f)
-			}
-			// Use that energy
-			if f.IsVeggie {
-				c.Energy += c.DNA.PlantConversionEfficiency() * takenEnergy
-			} else {
-				c.Energy += c.DNA.MeatConversionEfficiency() * takenEnergy
+			if -offset.Unit().Dot(c.Fwd()) > 0.9 { // On mouth
+				// Take energy from food
+				takenEnergy := math.Min(f.Energy, c.DNA.FoodEatRate()*deltaTime)
+				f.Energy -= takenEnergy
+				if f.Energy <= 0 {
+					e.Food.Remove(f)
+				}
+				// Use that energy
+				if f.IsVeggie {
+					c.Energy += c.DNA.PlantConversionEfficiency() * takenEnergy
+				} else {
+					c.Energy += c.DNA.MeatConversionEfficiency() * takenEnergy
+				}
 			}
 			// Push the food away
 			lenDiff := offset.Len() - (c.Radius+f.Radius())/2
-			f.Pos = f.Pos.Add(offset.Unit().Scaled(5 * deltaTime * lenDiff))
+			f.Pos = f.Pos.Add(offset.Unit().Scaled(15 * deltaTime * lenDiff))
 		}
 	}
 	if c.Energy > c.DNA.MaxEnergy() {
@@ -253,7 +259,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 
 	// Apply chosen motion
 	forwardsPush := c.DNA.PushForce() * power
-	resultantForce = resultantForce.Add(pixel.V(0, 1).Rotated(c.Rot).Scaled(forwardsPush))
+	resultantForce = resultantForce.Add(c.Fwd().Scaled(forwardsPush))
 	resultantTorque += turn * GlobalSP.CreatureBaseMultipliers.RotateForce
 
 	// Add the force and apply drag
