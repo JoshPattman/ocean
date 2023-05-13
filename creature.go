@@ -152,6 +152,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	}
 
 	// Bounce off neighbors
+	neighborsOnMouth := make([]*Creature, 0)
 	{
 		neighborBounceForce := pixel.ZV
 		for _, n := range neighbors {
@@ -159,6 +160,9 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 			if n != c && diff.Len() < (c.Radius+n.Radius)/2 {
 				overlap := diff.Len() - (c.Radius+n.Radius)/2
 				neighborBounceForce = neighborBounceForce.Add(diff.Unit().Scaled(-overlap * 50))
+				if -diff.Unit().Dot(c.Fwd()) > 0.9 { // On mouth
+					neighborsOnMouth = append(neighborsOnMouth, n)
+				}
 			}
 		}
 		resultantForce = resultantForce.Add(neighborBounceForce)
@@ -258,11 +262,19 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Parse the output
 	turn := nnOutput[0] * math.Pi / 2
 	power := nnOutput[1]/2 + 0.5
+	isAttack := nnOutput[2] > 0
 
 	// Apply chosen motion
 	forwardsPush := c.DNA.PushForce() * power
 	resultantForce = resultantForce.Add(c.Fwd().Scaled(forwardsPush))
 	resultantTorque += turn * GlobalSP.CreatureBaseMultipliers.RotateForce
+
+	// Attack enemies if we want to
+	if isAttack {
+		for _, n := range neighborsOnMouth {
+			n.Die(e)
+		}
+	}
 
 	// Add the force and apply drag
 	c.Vel = c.Vel.Add(resultantForce.Scaled(deltaTime)).Scaled(1 - drag*deltaTime)

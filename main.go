@@ -46,7 +46,7 @@ func run() {
 
 	// Setup goevo
 	gtCounter = &SaveLoadCounter{}
-	gtOrig := goevo.NewGenotype(gtCounter, NewCreature(CreatureDNA{}).NumInputs(), 2, goevo.ActivationLinear, goevo.ActivationTanh)
+	gtOrig := goevo.NewGenotype(gtCounter, NewCreature(CreatureDNA{}).NumInputs(), 3, goevo.ActivationLinear, goevo.ActivationTanh)
 
 	// Setup Environment
 	env := NewEnvironment(GlobalSP.MapParams.MapRadius)
