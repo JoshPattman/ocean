@@ -190,12 +190,27 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 		sensorFoodValue := 0.0
 		sensorAnimalValue := 0.0
 		sensorWallValue := 0.0
+		sensorWallDist := math.Inf(1)
+
+		// Check Wall sensors
+		sectionSamples := math.Round(sight * 2)
+		sectionSampleLength := sight / sectionSamples
+		for i := 0.0; i <= sectionSamples; i++ {
+			dist := i * sectionSampleLength
+			samplePos := c.Pos.Add(sensorDir.Scaled(dist))
+			if e.sampleWallAt(samplePos, false) {
+				sensorWallValue = 1 - dist/sight
+				sensorWallDist = dist
+				break
+			}
+		}
+
 		// Check Food sensors
 		for _, f := range nearbyFood {
 			dirToFood := f.Pos.Sub(c.Pos)
 			distToFood := dirToFood.Len()
 			dotSensorDir := dirToFood.Dot(sensorDir)
-			if dotSensorDir > 0 {
+			if distToFood < sensorWallDist-0.5 && dotSensorDir > 0 {
 				allowedDistFromLine := math.Sin(sensorWidth) / 2 * distToFood
 				distToLine := math.Abs(dirToFood.Sub(sensorDir.Scaled(dotSensorDir)).Len())
 				if distToLine <= allowedDistFromLine {
@@ -216,7 +231,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 			dirToAnimal := f.Pos.Sub(c.Pos)
 			distToAnimal := dirToAnimal.Len()
 			dotSensorDir := dirToAnimal.Dot(sensorDir)
-			if dotSensorDir > 0 {
+			if distToAnimal < sensorWallDist-0.5 && dotSensorDir > 0 {
 				allowedDistFromLine := math.Sin(sensorWidth) / 2 * distToAnimal
 				distToLine := math.Abs(dirToAnimal.Sub(sensorDir.Scaled(dotSensorDir)).Len())
 				if distToLine <= allowedDistFromLine {
@@ -225,18 +240,6 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 						sensorAnimalValue = newValue
 					}
 				}
-			}
-		}
-
-		// Check Wall sensors
-		sectionSamples := math.Round(sight * 2)
-		sectionSampleLength := sight / sectionSamples
-		for i := 0.0; i <= sectionSamples; i++ {
-			dist := i * sectionSampleLength
-			samplePos := c.Pos.Add(sensorDir.Scaled(dist))
-			if e.sampleWallAt(samplePos, false) {
-				sensorWallValue = 1 - dist/sight
-				break
 			}
 		}
 
