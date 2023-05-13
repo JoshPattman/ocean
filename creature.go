@@ -115,7 +115,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Setup the physics
 	resultantForce := pixel.ZV
 	resultantTorque := 0.0
-	drag := GlobalSP.Drag
+	drag := GlobalSP.CreatureBaseMultipliers.Drag
 
 	// Wall collisions
 	{
@@ -254,11 +254,11 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	// Apply chosen motion
 	forwardsPush := c.DNA.PushForce() * power
 	resultantForce = resultantForce.Add(pixel.V(0, 1).Rotated(c.Rot).Scaled(forwardsPush))
-	resultantTorque += turn * GlobalSP.RotateForce
+	resultantTorque += turn * GlobalSP.CreatureBaseMultipliers.RotateForce
 
 	// Add the force and apply drag
 	c.Vel = c.Vel.Add(resultantForce.Scaled(deltaTime)).Scaled(1 - drag*deltaTime)
-	c.RotVel = (c.RotVel + resultantTorque*deltaTime) * (1 - GlobalSP.AngularDrag*deltaTime)
+	c.RotVel = (c.RotVel + resultantTorque*deltaTime) * (1 - GlobalSP.CreatureBaseMultipliers.AngularDrag*deltaTime)
 	// Update pos and rot
 	c.Pos = c.Pos.Add(c.Vel.Scaled(deltaTime))
 	c.Rot += c.RotVel * deltaTime //c.Vel.Angle() - math.Pi/2

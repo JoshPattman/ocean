@@ -49,7 +49,7 @@ func run() {
 	gtOrig := goevo.NewGenotype(gtCounter, NewCreature(CreatureDNA{}).NumInputs(), 2, goevo.ActivationLinear, goevo.ActivationTanh)
 
 	// Setup Environment
-	env := NewEnvironment(GlobalSP.MapRadius)
+	env := NewEnvironment(GlobalSP.MapParams.MapRadius)
 	//env.ScatterFood(0.01)
 	for i := 0; i < 300; i++ {
 		gt := goevo.NewGenotypeCopy(gtOrig)
@@ -165,10 +165,10 @@ func run() {
 		// Update Sim
 		// Grow new food on plants
 		for _, p := range env.Plants.Objects {
-			if rand.Float64() < (1/60.0)/GlobalSP.FoodGrowthDelay {
+			if rand.Float64() < (1/60.0)/GlobalSP.PlantParams.FoodGrowthDelay {
 				// Check if there is already a food under us
 				if len(env.Food.Query(p.Pos, 0.1)) == 0 {
-					energy := math.Pow(p.Fertility, 3) * GlobalSP.GrownFoodEnergy
+					energy := math.Pow(p.Fertility, 3) * GlobalSP.PlantParams.GrownFoodEnergy
 					f := NewFood(energy, true)
 					f.Pos = p.Pos
 					f.Rot = rand.Float64() * 2 * math.Pi

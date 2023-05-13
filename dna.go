@@ -24,34 +24,34 @@ type CreatureDNA struct {
 }
 
 func (c CreatureDNA) MeatConversionEfficiency() float64 {
-	return math.Pow(c.Diet, 1/(1-GlobalSP.ConversionEfficiencySlopeMeat))
+	return math.Pow(c.Diet, 1/(1-GlobalSP.CreatureBalances.ConversionEfficiencySlopeMeat))
 }
 func (c CreatureDNA) PlantConversionEfficiency() float64 {
-	return math.Pow(1-c.Diet, 1/(1-GlobalSP.ConversionEfficiencySlopePlant))
+	return math.Pow(1-c.Diet, 1/(1-GlobalSP.CreatureBalances.ConversionEfficiencySlopePlant))
 }
 func (c CreatureDNA) PredatoryMetabolismMultiplier() float64 {
-	return 1 - (GlobalSP.PredatorMetabolismPercentage * math.Pow(c.Diet, 1/(1-GlobalSP.PredatorEfficiencySlope)))
+	return 1 - (GlobalSP.CreatureBalances.PredatorMetabolismPercentage * math.Pow(c.Diet, 1/(1-GlobalSP.CreatureBalances.PredatorEfficiencySlope)))
 }
 func (c CreatureDNA) MaxEnergy() float64 {
-	return GlobalSP.MaxEnergy * (c.Size * c.Size)
+	return GlobalSP.CreatureBaseMultipliers.MaxEnergy * (c.Size * c.Size)
 }
 func (c CreatureDNA) Metabolism() float64 {
-	return GlobalSP.Metabolism * (c.Size*c.Size + c.Vision + c.Speed) * c.PredatoryMetabolismMultiplier()
+	return GlobalSP.CreatureBaseMultipliers.Metabolism * (c.Size*c.Size + c.Vision + c.Speed) * c.PredatoryMetabolismMultiplier()
 }
 func (c CreatureDNA) FoodEatRate() float64 {
-	return GlobalSP.FoodEatRate * c.Size
+	return GlobalSP.CreatureBaseMultipliers.FoodEatRate * c.Size
 }
 func (c CreatureDNA) PlantDrag() float64 {
-	return GlobalSP.PlantDrag * c.Size
+	return GlobalSP.CreatureBaseMultipliers.PlantDrag * c.Size
 }
 func (c CreatureDNA) DeathEnergy() float64 {
-	return c.MaxEnergy() * GlobalSP.DeathEnergyThreshold
+	return c.MaxEnergy() * GlobalSP.CreatureBalances.DeathEnergyThreshold
 }
 func (c CreatureDNA) VisionRange() float64 {
-	return GlobalSP.Vision * c.Vision
+	return GlobalSP.CreatureBaseMultipliers.Vision * c.Vision
 }
 func (c CreatureDNA) PushForce() float64 {
-	return GlobalSP.PushForce * c.Speed
+	return GlobalSP.CreatureBaseMultipliers.PushForce * c.Speed
 }
 
 func (c CreatureDNA) Validated() CreatureDNA {
