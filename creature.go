@@ -268,33 +268,42 @@ func (c *Creature) Child() *Creature {
 	// Copy DNA
 	dna := c.DNA.Copied()
 	// Mutate traits
-	if rand.Float64() < 0.25 {
-		dna.Diet += (rand.Float64()*2 - 1) * 0.1
+	if rand.Float64() < GlobalSP.MutationParameters.TraitMutationRate {
+		dna.Diet += (rand.Float64()*2 - 1) * GlobalSP.MutationParameters.TraitMutationSize
 	}
-	if rand.Float64() < 0.25 {
-		dna.Size += (rand.Float64()*2 - 1) * 0.1
+	if rand.Float64() < GlobalSP.MutationParameters.TraitMutationRate {
+		dna.Size += (rand.Float64()*2 - 1) * GlobalSP.MutationParameters.TraitMutationSize
 	}
-	if rand.Float64() < 0.25 {
-		dna.Speed += (rand.Float64()*2 - 1) * 0.1
+	if rand.Float64() < GlobalSP.MutationParameters.TraitMutationRate {
+		dna.Speed += (rand.Float64()*2 - 1) * GlobalSP.MutationParameters.TraitMutationSize
 	}
-	if rand.Float64() < 0.25 {
-		dna.Vision += (rand.Float64()*2 - 1) * 0.1
+	if rand.Float64() < GlobalSP.MutationParameters.TraitMutationRate {
+		dna.Vision += (rand.Float64()*2 - 1) * GlobalSP.MutationParameters.TraitMutationSize
 	}
-	if rand.Float64() < 0.25 {
-		dna.Color = c.DNA.Color.Randomised(0.1)
+	if rand.Float64() < GlobalSP.MutationParameters.TraitMutationRate {
+		dna.Color = c.DNA.Color.Randomised(GlobalSP.MutationParameters.TraitMutationSize)
 	}
 	// Mutate brain
-	for i := 0; i < rand.Intn(4); i++ {
-		goevo.MutateRandomSynapse(dna.Genotype, 0.3)
+	maxReps := 4.0
+	for i := 0; i < int(maxReps); i++ {
+		if rand.Float64() < GlobalSP.MutationParameters.SynapseMutationProbability/maxReps {
+			goevo.MutateRandomSynapse(dna.Genotype, GlobalSP.MutationParameters.SynapseMutationSize)
+		}
 	}
-	if rand.Float64() < 0.3 {
-		goevo.AddRandomSynapse(gtCounter, dna.Genotype, 0.5, false, 5)
+	for i := 0; i < int(maxReps); i++ {
+		if rand.Float64() < GlobalSP.MutationParameters.SynapseGrowthProbability/maxReps {
+			goevo.AddRandomSynapse(gtCounter, dna.Genotype, GlobalSP.MutationParameters.SynapseGrowthSize, false, 5)
+		}
 	}
-	if rand.Float64() < 0.1 {
-		goevo.AddRandomNeuron(gtCounter, dna.Genotype, goevo.ActivationSigmoid)
+	for i := 0; i < int(maxReps); i++ {
+		if rand.Float64() < GlobalSP.MutationParameters.NeuronGrowProbability/maxReps {
+			goevo.AddRandomNeuron(gtCounter, dna.Genotype, goevo.ActivationSigmoid)
+		}
 	}
-	if rand.Float64() < 0.1 {
-		goevo.PruneRandomSynapse(dna.Genotype)
+	for i := 0; i < int(maxReps); i++ {
+		if rand.Float64() < GlobalSP.MutationParameters.SynapsePruneProbability/maxReps {
+			goevo.PruneRandomSynapse(dna.Genotype)
+		}
 	}
 	// Create creture
 	c1 := NewCreature(dna)

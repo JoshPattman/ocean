@@ -5,6 +5,7 @@ type SimulationParameters struct {
 	PlantParams             SimulationParametersPlant            `json:"plant_growth"`            // Plant growth
 	CreatureBaseMultipliers SimulationParametersCreatureBases    `json:"creature_base_values"`    // Multipliers (any number > 0)
 	CreatureBalances        SimulationParametersCreatureBalances `json:"creature_balance_values"` // Balances (between 0 and 1)
+	MutationParameters      MutationParameters                   `json:"mutation_parameters"`     // Mutation parameters
 }
 
 type SimulationParametersMapGen struct {
@@ -40,6 +41,17 @@ type SimulationParametersCreatureBalances struct {
 	PredatorMetabolismPercentage   float64 `json:"predator_percentage"`               // The maximum percentage drop in metabolism of predators
 }
 
+type MutationParameters struct {
+	TraitMutationRate          float64 `json:"trait_mutation_rate"`          // The chance that a trait will mutate
+	TraitMutationSize          float64 `json:"trait_mutation_size"`          // The size of a trait mutation
+	SynapseMutationProbability float64 `json:"synapse_mutation_probability"` // The chance that a synapse will mutate
+	SynapseMutationSize        float64 `json:"synapse_mutation_size"`        // The size of a synapse mutation
+	SynapseGrowthProbability   float64 `json:"synapse_growth_probability"`   // The chance that a synapse will grow
+	SynapseGrowthSize          float64 `json:"synapse_growth_size"`          // The size of a synapse growth
+	NeuronGrowProbability      float64 `json:"neuron_grow_probability"`      // The chance that a neuron will grow
+	SynapsePruneProbability    float64 `json:"synapse_prune_probability"`    // The chance that a synapse will be pruned
+}
+
 var GlobalSP = SimulationParameters{
 	MapParams: SimulationParametersMapGen{
 		MapRadius:              400,
@@ -72,5 +84,15 @@ var GlobalSP = SimulationParameters{
 		DeathEnergyThreshold:           0.2,
 		PredatorEfficiencySlope:        0.7,
 		PredatorMetabolismPercentage:   0.5,
+	},
+	MutationParameters: MutationParameters{
+		TraitMutationRate:          0.2,
+		TraitMutationSize:          0.1,
+		SynapseMutationProbability: 0.2,
+		SynapseMutationSize:        0.1,
+		SynapseGrowthProbability:   0.15,
+		SynapseGrowthSize:          0.5,
+		NeuronGrowProbability:      0.05,
+		SynapsePruneProbability:    0.1,
 	},
 }
