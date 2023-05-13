@@ -51,7 +51,7 @@ func run() {
 	// Setup Environment
 	env := NewEnvironment(GlobalSP.MapParams.MapRadius)
 	//env.ScatterFood(0.01)
-	for i := 0; i < 300; i++ {
+	for i := 0; i < GlobalSP.MapParams.InitialCreaturesNumber; i++ {
 		gt := goevo.NewGenotypeCopy(gtOrig)
 		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
 		goevo.AddRandomSynapse(gtCounter, gt, 1, false, 5)
@@ -64,7 +64,7 @@ func run() {
 			Color:    RandomHSV(),
 			Vision:   1,
 		})
-		c.Pos = pixel.V(rand.Float64()*100-50, rand.Float64()*100-50)
+		c.Pos = pixel.V(math.Sqrt(rand.Float64())*float64(GlobalSP.MapParams.MapRadius)*0.25, 0).Rotated(rand.Float64() * 2 * math.Pi)
 		env.Creatures.Add(c)
 	}
 

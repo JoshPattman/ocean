@@ -8,10 +8,11 @@ type SimulationParameters struct {
 }
 
 type SimulationParametersMapGen struct {
-	PlantDensity  float64 `json:"plant_density"`  // The number of plants per unit area
-	PlantCoverage float64 `json:"plant_coverage"` // The percentage of the map covered in plants
-	MapRadius     int     `json:"map_radius"`     // The radius of the map
-	CaveSize      float64 `json:"cave_size"`      // The size of the cave
+	PlantDensity           float64 `json:"plant_density"`            // The number of plants per unit area
+	PlantCoverage          float64 `json:"plant_coverage"`           // The percentage of the map covered in plants
+	MapRadius              int     `json:"map_radius"`               // The radius of the map
+	CaveSize               float64 `json:"cave_size"`                // The size of the cave
+	InitialCreaturesNumber int     `json:"initial_creatures_number"` // The number of creatures to start with
 }
 
 type SimulationParametersPlant struct {
@@ -41,10 +42,11 @@ type SimulationParametersCreatureBalances struct {
 
 var GlobalSP = SimulationParameters{
 	MapParams: SimulationParametersMapGen{
-		MapRadius:     400,
-		PlantDensity:  0.3,
-		PlantCoverage: 0.8,
-		CaveSize:      1,
+		MapRadius:              400,
+		PlantDensity:           0.3,
+		PlantCoverage:          0.8,
+		CaveSize:               1,
+		InitialCreaturesNumber: 300,
 	},
 
 	PlantParams: SimulationParametersPlant{
