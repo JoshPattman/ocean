@@ -43,7 +43,7 @@ func (env *Environment) regenerateTerrain() {
 		tw[i] = make([]bool, radius*2)
 		for j := range tw[i] {
 			xc, yc := float64(i), float64(j)
-			p := perlinGen.Noise2D(xc/25, yc/25)
+			p := perlinGen.Noise2D(xc/(25*GlobalSP.MapParams.CaveSize), yc/(25*GlobalSP.MapParams.CaveSize))
 			d := center.Sub(pixel.V(float64(i), float64(j))).Len()
 			if d < 0.25*radiusFloat {
 				tw[i][j] = false

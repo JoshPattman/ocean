@@ -1,23 +1,17 @@
 package main
 
 type SimulationParameters struct {
-	// Environment generation
-	MapParams SimulationParametersMapGen `json:"map_generation"` // The parameters for map generation
-
-	// Plant growth
-	PlantParams SimulationParametersPlant `json:"plant_growth"` // The parameters for plant growth
-
-	// Multipliers (any number > 0)
-	CreatureBaseMultipliers SimulationParametersCreatureBases `json:"creature_base_values"` // The base multipliers for creatures
-
-	// Balances (between 0 and 1)
-	CreatureBalances SimulationParametersCreatureBalances `json:"creature_balance_values"` // The balance values for creatures
+	MapParams               SimulationParametersMapGen           `json:"map_generation"`          // Environment generation
+	PlantParams             SimulationParametersPlant            `json:"plant_growth"`            // Plant growth
+	CreatureBaseMultipliers SimulationParametersCreatureBases    `json:"creature_base_values"`    // Multipliers (any number > 0)
+	CreatureBalances        SimulationParametersCreatureBalances `json:"creature_balance_values"` // Balances (between 0 and 1)
 }
 
 type SimulationParametersMapGen struct {
 	PlantDensity  float64 `json:"plant_density"`  // The number of plants per unit area
 	PlantCoverage float64 `json:"plant_coverage"` // The percentage of the map covered in plants
 	MapRadius     int     `json:"map_radius"`     // The radius of the map
+	CaveSize      float64 `json:"cave_size"`      // The size of the cave
 }
 
 type SimulationParametersPlant struct {
@@ -50,6 +44,7 @@ var GlobalSP = SimulationParameters{
 		MapRadius:     400,
 		PlantDensity:  0.3,
 		PlantCoverage: 0.8,
+		CaveSize:      1,
 	},
 
 	PlantParams: SimulationParametersPlant{
