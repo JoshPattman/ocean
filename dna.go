@@ -24,10 +24,10 @@ type CreatureDNA struct {
 }
 
 func (c CreatureDNA) MeatConversionEfficiency() float64 {
-	return math.Pow(c.Diet, 1/(1-GlobalSP.CreatureBalances.ConversionEfficiencySlopeMeat))
+	return 1 - math.Pow(1-c.Diet, 1/(1-GlobalSP.CreatureBalances.ConversionEfficiencyDampMeat))
 }
 func (c CreatureDNA) PlantConversionEfficiency() float64 {
-	return math.Pow(1-c.Diet, 1/(1-GlobalSP.CreatureBalances.ConversionEfficiencySlopePlant))
+	return 1 - math.Pow(c.Diet, 1/(1-GlobalSP.CreatureBalances.ConversionEfficiencyDampPlant))
 }
 func (c CreatureDNA) PredatoryMetabolismMultiplier() float64 {
 	return 1 - (GlobalSP.CreatureBalances.PredatorMetabolismPercentage * math.Pow(c.Diet, 1/(1-GlobalSP.CreatureBalances.PredatorEfficiencySlope)))

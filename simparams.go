@@ -34,11 +34,11 @@ type SimulationParametersCreatureBases struct {
 }
 
 type SimulationParametersCreatureBalances struct {
-	ConversionEfficiencySlopePlant float64 `json:"conversion_efficiency_slope_plant"` // The slope of the conversion efficiency curve for plants
-	ConversionEfficiencySlopeMeat  float64 `json:"conversion_efficiency_slope_meat"`  // The slope of the conversion efficiency curve for meat
-	DeathEnergyThreshold           float64 `json:"death_energy_threshold"`            // The percent energy a creature must have to survive
-	PredatorEfficiencySlope        float64 `json:"predator_efficiency_slope"`         // The slope of the predator efficiency curve. At 0, effect is linear. At 1, only a perfect predator gets a boost
-	PredatorMetabolismPercentage   float64 `json:"predator_percentage"`               // The maximum percentage drop in metabolism of predators
+	ConversionEfficiencyDampPlant float64 `json:"conversion_efficiency_damping_plant"` // The slope of the conversion efficiency curve for plants. At 0, linear. At 1, diet has no effect.
+	ConversionEfficiencyDampMeat  float64 `json:"conversion_efficiency_damping_meat"`  // The slope of the conversion efficiency curve for meat. At 0, linear. At 1, diet has no effect.
+	DeathEnergyThreshold          float64 `json:"death_energy_threshold"`              // The percent energy a creature must have to survive
+	PredatorEfficiencySlope       float64 `json:"predator_efficiency_slope"`           // The slope of the predator efficiency curve. At 0, effect is linear. At 1, only a perfect predator gets a boost
+	PredatorMetabolismPercentage  float64 `json:"predator_efficiency_percentage"`      // The maximum percentage drop in metabolism of predators
 }
 
 type MutationParameters struct {
@@ -79,11 +79,11 @@ var GlobalSP = SimulationParameters{
 	},
 
 	CreatureBalances: SimulationParametersCreatureBalances{
-		ConversionEfficiencySlopePlant: 0.5,
-		ConversionEfficiencySlopeMeat:  0.5,
-		DeathEnergyThreshold:           0.2,
-		PredatorEfficiencySlope:        0.7,
-		PredatorMetabolismPercentage:   0.5,
+		ConversionEfficiencyDampPlant: 0.5,
+		ConversionEfficiencyDampMeat:  0.5,
+		DeathEnergyThreshold:          0.2,
+		PredatorEfficiencySlope:       0.75,
+		PredatorMetabolismPercentage:  0.5,
 	},
 	MutationParameters: MutationParameters{
 		TraitMutationRate:          0.2,
