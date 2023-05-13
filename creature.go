@@ -155,8 +155,10 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	{
 		neighborBounceForce := pixel.ZV
 		for _, n := range neighbors {
-			if n != c && c.Pos.Sub(n.Pos).Len() < (c.Radius+n.Radius)/2 {
-				neighborBounceForce = neighborBounceForce.Add(c.Pos.Sub(n.Pos).Unit().Scaled(10))
+			diff := c.Pos.Sub(n.Pos)
+			if n != c && diff.Len() < (c.Radius+n.Radius)/2 {
+				overlap := diff.Len() - (c.Radius+n.Radius)/2
+				neighborBounceForce = neighborBounceForce.Add(diff.Unit().Scaled(-overlap * 50))
 			}
 		}
 		resultantForce = resultantForce.Add(neighborBounceForce)
