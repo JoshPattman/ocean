@@ -313,7 +313,8 @@ func run() {
 				"Diet -------------- %.2f\n"+
 				"Plant Efficiency -- %.2f\n"+
 				"Meat Efficiency --- %.2f\n"+
-				"Predator Met Mult - %.2f\n",
+				"Predator Met Mult - %.2f\n"+
+				"Metabolism -------- %.2f\n",
 
 				activeCreature.Energy, activeCreature.DNA.MaxEnergy(),
 				activeCreature.Energy-activeCreature.DNA.DeathEnergy(), activeCreature.DNA.MaxEnergy()-activeCreature.DNA.DeathEnergy(),
@@ -323,15 +324,16 @@ func run() {
 				activeCreature.DNA.Diet,
 				activeCreature.DNA.PlantConversionEfficiency(),
 				activeCreature.DNA.MeatConversionEfficiency(),
-				activeCreature.DNA.PredatoryMetabolismMultiplier())
+				activeCreature.DNA.PredatoryMetabolismMultiplier(),
+				activeCreature.DNA.Metabolism())
 
 			statsLoc := pixel.V(win.Bounds().W()-250, win.Bounds().H()-20)
 			// Background box
 			imd.Clear()
 			imd.Color = color.RGBA{0, 0, 0, 150}
 			imd.Push(statsLoc.Add(pixel.V(0, 10)))
-			imd.Push(statsLoc.Add(pixel.V(0, -120)))
-			imd.Push(statsLoc.Add(pixel.V(250, -120)))
+			imd.Push(statsLoc.Add(pixel.V(0, -130)))
+			imd.Push(statsLoc.Add(pixel.V(250, -130)))
 			imd.Push(statsLoc.Add(pixel.V(250, 10)))
 			imd.Polygon(0)
 			// Creature circle

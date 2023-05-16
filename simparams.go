@@ -22,15 +22,16 @@ type SimulationParametersPlant struct {
 }
 
 type SimulationParametersCreatureBases struct {
-	MaxEnergy   float64 `json:"max_energy"`    // The energy a creature would have if its max energy multiplier was 1
-	PushForce   float64 `json:"push_force"`    // The force a creature would have if its push force multiplier was 1
-	Metabolism  float64 `json:"metabolism"`    // The energy a creature would lose if its metabolism multiplier was 1
-	Vision      float64 `json:"vision"`        // The range a creature would have if its vision multiplier was 1
-	PlantDrag   float64 `json:"plant_drag"`    // The drag a creature would have if its drag multiplier was 1
-	FoodEatRate float64 `json:"food_eat_rate"` // The rate at which a creature would eat food if its food eat rate multiplier was 1
-	Drag        float64 `json:"drag"`          // The drag a creature would have if its drag multiplier was 1
-	AngularDrag float64 `json:"angular_drag"`  // The angular drag a creature would have if its angular drag multiplier was 1
-	RotateForce float64 `json:"rotate_force"`  // The force a creature would have if its rotate force multiplier was 1
+	MaxEnergy           float64 `json:"max_energy"`            // The energy a creature would have if its max energy multiplier was 1
+	PushForce           float64 `json:"push_force"`            // The force a creature would have if its push force multiplier was 1
+	Metabolism          float64 `json:"metabolism"`            // The energy a creature would lose if its metabolism multiplier was 1
+	Vision              float64 `json:"vision"`                // The range a creature would have if its vision multiplier was 1
+	PlantDrag           float64 `json:"plant_drag"`            // The drag a creature would have if its drag multiplier was 1
+	FoodEatRate         float64 `json:"food_eat_rate"`         // The rate at which a creature would eat food if its food eat rate multiplier was 1
+	Drag                float64 `json:"drag"`                  // The drag a creature would have if its drag multiplier was 1
+	AngularDrag         float64 `json:"angular_drag"`          // The angular drag a creature would have if its angular drag multiplier was 1
+	RotateForce         float64 `json:"rotate_force"`          // The force a creature would have if its rotate force multiplier was 1
+	MetabolismPerNeuron float64 `json:"metabolism_per_neuron"` // The amount of energy a neuron uses per tick
 }
 
 type SimulationParametersCreatureBalances struct {
@@ -67,15 +68,16 @@ var GlobalSP = SimulationParameters{
 	},
 
 	CreatureBaseMultipliers: SimulationParametersCreatureBases{
-		MaxEnergy:   1,
-		PushForce:   20,
-		Metabolism:  0.015,
-		Vision:      10,
-		PlantDrag:   3,
-		FoodEatRate: 5,
-		Drag:        8,
-		AngularDrag: 7,
-		RotateForce: 10,
+		MaxEnergy:           1,
+		PushForce:           20,
+		Metabolism:          0.015,
+		Vision:              10,
+		PlantDrag:           3,
+		FoodEatRate:         5,
+		Drag:                8,
+		AngularDrag:         7,
+		RotateForce:         10,
+		MetabolismPerNeuron: 0.005,
 	},
 
 	CreatureBalances: SimulationParametersCreatureBalances{

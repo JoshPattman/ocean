@@ -36,7 +36,8 @@ func (c CreatureDNA) MaxEnergy() float64 {
 	return GlobalSP.CreatureBaseMultipliers.MaxEnergy * (c.Size * c.Size)
 }
 func (c CreatureDNA) Metabolism() float64 {
-	return GlobalSP.CreatureBaseMultipliers.Metabolism * (c.Size*c.Size + c.Vision + c.Speed) * c.PredatoryMetabolismMultiplier()
+	return GlobalSP.CreatureBaseMultipliers.Metabolism*(c.Size*c.Size+c.Vision+c.Speed)*c.PredatoryMetabolismMultiplier() +
+		GlobalSP.CreatureBaseMultipliers.MetabolismPerNeuron*float64(len(c.Genotype.NeuronOrder)-c.Genotype.NumIn-c.Genotype.NumOut)
 }
 func (c CreatureDNA) FoodEatRate() float64 {
 	return GlobalSP.CreatureBaseMultipliers.FoodEatRate * c.Size
