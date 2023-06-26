@@ -176,6 +176,14 @@ func run() {
 				}
 			}
 		}
+		// Decay Food
+		for _, f := range env.Food.Objects {
+			f.Energy -= GlobalSP.EnvironmentalParams.FoodDecayRate * (1 / 60.0)
+			if f.Energy <= 0 {
+				env.Food.Remove(f)
+			}
+		}
+
 		// Update hash maps
 		env.Creatures.Refresh()
 		env.Food.Refresh()
@@ -224,7 +232,7 @@ func run() {
 		numCreaturesText.Clear()
 		// Update Stats
 		fmt.Fprintf(timerText, "Sim Time: %s", time.Since(startTime).String())
-		fmt.Fprintf(numCreaturesText, "Num Creatures: %d", len(env.Creatures.Objects))
+		fmt.Fprintf(numCreaturesText, "Num Creatures: %d\nNum Food: %d", len(env.Creatures.Objects), len(env.Food.Objects))
 		// Draw Stats
 		timerText.Draw(win, pixel.IM.Moved(pixel.V(10, win.Bounds().H()-20)))
 		numCreaturesText.Draw(win, pixel.IM.Moved(pixel.V(10, win.Bounds().H()-40)))
@@ -248,7 +256,7 @@ func run() {
 		}
 		if activeCreature != nil {
 			instructionsText.Clear()
-			fmt.Fprintf(instructionsText, "S(c)atter Food, (K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color, Exp(o)rt Creature, (I)mport Creature, (L)oad Sim Params")
+			fmt.Fprintf(instructionsText, "Sca(t)ter Food, (K)ill, (C)lone, (F)eed, (G)rab, (R)andomize Color, Exp(o)rt Creature, (I)mport Creature, (L)oad Sim Params")
 			// Update actions
 			if win.JustPressed(pixelgl.KeyK) {
 				activeCreature.Die(env)

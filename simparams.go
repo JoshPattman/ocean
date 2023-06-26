@@ -6,6 +6,7 @@ type SimulationParameters struct {
 	CreatureBaseMultipliers SimulationParametersCreatureBases    `json:"creature_base_values"`    // Multipliers (any number > 0)
 	CreatureBalances        SimulationParametersCreatureBalances `json:"creature_balance_values"` // Balances (between 0 and 1)
 	MutationParameters      MutationParameters                   `json:"mutation_parameters"`     // Mutation parameters
+	EnvironmentalParams     EnvironmentalParameters              `json:"environmental_parameters"`
 }
 
 type SimulationParametersMapGen struct {
@@ -53,6 +54,10 @@ type MutationParameters struct {
 	SynapsePruneProbability    float64 `json:"synapse_prune_probability"`    // The chance that a synapse will be pruned
 }
 
+type EnvironmentalParameters struct {
+	FoodDecayRate float64 `json:"food_decay_rate"` // The rate at which food decays
+}
+
 var GlobalSP = SimulationParameters{
 	MapParams: SimulationParametersMapGen{
 		MapRadius:              400,
@@ -96,5 +101,9 @@ var GlobalSP = SimulationParameters{
 		SynapseGrowthSize:          0.5,
 		NeuronGrowProbability:      0.05,
 		SynapsePruneProbability:    0.1,
+	},
+
+	EnvironmentalParams: EnvironmentalParameters{
+		FoodDecayRate: 0.01,
 	},
 }

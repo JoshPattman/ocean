@@ -61,7 +61,7 @@ func (c *Creature) Eq(o HashMappable) bool {
 }
 
 func (c *Creature) NumInputs() int {
-	return len(c.sensorAngles)*3 + 1
+	return len(c.sensorAngles)*3 + 2 + 1
 }
 
 func (c *Creature) Die(e *Environment) {
@@ -82,7 +82,9 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	neighbors := e.Creatures.Query(c.Pos, sight)
 	nearbyFood := e.Food.Query(c.Pos, sight)
 	// We just leave this as 10 because visibility does not make a difference to drag due to plants
-	nearbyPlants := e.Plants.Query(c.Pos, math.Max(10, sight))
+	nearbyPlants := e.Plants.Query(c.Pos, 10)
+	currentDepth := c.Pos.Len() / float64(e.Radius)
+	currentDepthAlignment := c.Fwd().Dot(c.Pos.Unit())
 
 	// Update non physical attributes
 	c.Energy -= deltaTime * c.DNA.Metabolism()
@@ -259,6 +261,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	nnInput = append(nnInput, sensorFoodValues...)
 	nnInput = append(nnInput, sensorAnimalValues...)
 	nnInput = append(nnInput, sensorWallValues...)
+	nnInput = append(nnInput, currentDepth, currentDepthAlignment)
 	nnInput = append(nnInput, 1)
 	nnOutput := c.phenotype.Forward(nnInput)
 
