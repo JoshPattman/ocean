@@ -41,7 +41,7 @@ func NewCreature(dna CreatureDNA) *Creature {
 		Pos:          pixel.V(0, 0),
 		Vel:          pixel.V(0, 0),
 		Radius:       1 * dna.Size,
-		Rot:          0,
+		Rot:          rand.Float64() * math.Pi * 2,
 		Energy:       dna.MaxEnergy(),
 		DNA:          dna,
 		sensorAngles: sa,
