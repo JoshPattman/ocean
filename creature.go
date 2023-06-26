@@ -222,6 +222,7 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 					} else {
 						newValue = c.DNA.MeatConversionEfficiency() * newValue
 					}
+					newValue *= f.Energy / c.DNA.MaxEnergy() // Multiply by what percent that food could fill us up
 					if newValue > sensorFoodValue {
 						sensorFoodValue = newValue
 					}
