@@ -21,6 +21,8 @@ type Creature struct {
 	debugWallSensorValues   []float64
 	sensorAngles            []float64
 	phenotype               *goevo.Phenotype
+	updateTimer             float64
+	nnOutput                []float64
 }
 
 func NewCreature(dna CreatureDNA) *Creature {
@@ -46,6 +48,8 @@ func NewCreature(dna CreatureDNA) *Creature {
 		DNA:          dna,
 		sensorAngles: sa,
 		phenotype:    pheno,
+		updateTimer:  rand.Float64() * GlobalSP.EnvironmentalParams.BrainUpdateDelay,
+		nnOutput:     make([]float64, 3),
 	}
 }
 
@@ -76,7 +80,7 @@ func (c *Creature) Fwd() pixel.Vec {
 	return pixel.V(0, 1).Rotated(c.Rot)
 }
 
-func (c *Creature) Update(deltaTime float64, e *Environment) {
+func (c *Creature) Update(deltaTime float64, e *Environment, updateBrain bool) {
 	// Update knowlege
 	sight := c.DNA.VisionRange()
 	neighbors := e.Creatures.Query(c.Pos, sight)
@@ -185,91 +189,93 @@ func (c *Creature) Update(deltaTime float64, e *Environment) {
 	sensorWallValues := make([]float64, 0)
 	sensorAngles := make([]float64, 0)
 	sensorWidth := c.sensorAngles[1] - c.sensorAngles[0]
-	for _, sensorAngle := range c.sensorAngles {
-		// Find the sensor dir
-		sensorDir := pixel.V(0, 1).Rotated(c.Rot + sensorAngle)
-		// Set up the unsensed values
-		sensorFoodValue := 0.0
-		sensorAnimalValue := 0.0
-		sensorWallValue := 0.0
-		sensorWallDist := math.Inf(1)
+	if updateBrain {
+		for _, sensorAngle := range c.sensorAngles {
+			// Find the sensor dir
+			sensorDir := pixel.V(0, 1).Rotated(c.Rot + sensorAngle)
+			// Set up the unsensed values
+			sensorFoodValue := 0.0
+			sensorAnimalValue := 0.0
+			sensorWallValue := 0.0
+			sensorWallDist := math.Inf(1)
 
-		// Check Wall sensors
-		sectionSamples := math.Round(sight * 2)
-		sectionSampleLength := sight / sectionSamples
-		for i := 0.0; i <= sectionSamples; i++ {
-			dist := i * sectionSampleLength
-			samplePos := c.Pos.Add(sensorDir.Scaled(dist))
-			if e.sampleWallAt(samplePos, false) {
-				sensorWallValue = 1 - dist/sight
-				sensorWallDist = dist
-				break
+			// Check Wall sensors
+			sectionSamples := math.Round(sight * 2)
+			sectionSampleLength := sight / sectionSamples
+			for i := 0.0; i <= sectionSamples; i++ {
+				dist := i * sectionSampleLength
+				samplePos := c.Pos.Add(sensorDir.Scaled(dist))
+				if e.sampleWallAt(samplePos, false) {
+					sensorWallValue = 1 - dist/sight
+					sensorWallDist = dist
+					break
+				}
 			}
-		}
 
-		// Check Food sensors
-		for _, f := range nearbyFood {
-			dirToFood := f.Pos.Sub(c.Pos)
-			distToFood := dirToFood.Len()
-			dotSensorDir := dirToFood.Dot(sensorDir)
-			if distToFood < sensorWallDist-0.5 && dotSensorDir > 0 {
-				allowedDistFromLine := math.Sin(sensorWidth) / 2 * distToFood
-				distToLine := math.Abs(dirToFood.Sub(sensorDir.Scaled(dotSensorDir)).Len())
-				if distToLine <= allowedDistFromLine {
-					newValue := 1 - distToFood/sight
-					if f.IsVeggie {
-						newValue = c.DNA.PlantConversionEfficiency() * newValue
-					} else {
-						newValue = c.DNA.MeatConversionEfficiency() * newValue
-					}
-					newValue *= f.Energy / c.DNA.MaxEnergy() // Multiply by what percent that food could fill us up
-					if newValue > sensorFoodValue {
-						sensorFoodValue = newValue
+			// Check Food sensors
+			for _, f := range nearbyFood {
+				dirToFood := f.Pos.Sub(c.Pos)
+				distToFood := dirToFood.Len()
+				dotSensorDir := dirToFood.Dot(sensorDir)
+				if distToFood < sensorWallDist-0.5 && dotSensorDir > 0 {
+					allowedDistFromLine := math.Sin(sensorWidth) / 2 * distToFood
+					distToLine := math.Abs(dirToFood.Sub(sensorDir.Scaled(dotSensorDir)).Len())
+					if distToLine <= allowedDistFromLine {
+						newValue := 1 - distToFood/sight
+						if f.IsVeggie {
+							newValue = c.DNA.PlantConversionEfficiency() * newValue
+						} else {
+							newValue = c.DNA.MeatConversionEfficiency() * newValue
+						}
+						newValue *= f.Energy / c.DNA.MaxEnergy() // Multiply by what percent that food could fill us up
+						if newValue > sensorFoodValue {
+							sensorFoodValue = newValue
+						}
 					}
 				}
 			}
-		}
-		// Check Animal sensors
-		for _, f := range neighbors {
-			dirToAnimal := f.Pos.Sub(c.Pos)
-			distToAnimal := dirToAnimal.Len()
-			dotSensorDir := dirToAnimal.Dot(sensorDir)
-			if distToAnimal < sensorWallDist-0.5 && dotSensorDir > 0 {
-				allowedDistFromLine := math.Sin(sensorWidth) / 2 * distToAnimal
-				distToLine := math.Abs(dirToAnimal.Sub(sensorDir.Scaled(dotSensorDir)).Len())
-				if distToLine <= allowedDistFromLine {
-					newValue := 1 - distToAnimal/sight
-					if newValue > sensorAnimalValue {
-						sensorAnimalValue = newValue
+			// Check Animal sensors
+			for _, f := range neighbors {
+				dirToAnimal := f.Pos.Sub(c.Pos)
+				distToAnimal := dirToAnimal.Len()
+				dotSensorDir := dirToAnimal.Dot(sensorDir)
+				if distToAnimal < sensorWallDist-0.5 && dotSensorDir > 0 {
+					allowedDistFromLine := math.Sin(sensorWidth) / 2 * distToAnimal
+					distToLine := math.Abs(dirToAnimal.Sub(sensorDir.Scaled(dotSensorDir)).Len())
+					if distToLine <= allowedDistFromLine {
+						newValue := 1 - distToAnimal/sight
+						if newValue > sensorAnimalValue {
+							sensorAnimalValue = newValue
+						}
 					}
 				}
 			}
-		}
 
-		// Add the values to the list
-		sensorAngles = append(sensorAngles, sensorAngle)
-		sensorFoodValues = append(sensorFoodValues, sensorFoodValue)
-		sensorAnimalValues = append(sensorAnimalValues, sensorAnimalValue)
-		sensorWallValues = append(sensorWallValues, sensorWallValue)
+			// Add the values to the list
+			sensorAngles = append(sensorAngles, sensorAngle)
+			sensorFoodValues = append(sensorFoodValues, sensorFoodValue)
+			sensorAnimalValues = append(sensorAnimalValues, sensorAnimalValue)
+			sensorWallValues = append(sensorWallValues, sensorWallValue)
+		}
+		c.debugFoodSensorValues = sensorFoodValues
+		c.sensorAngles = sensorAngles
+		c.debugAnimalSensorValues = sensorAnimalValues
+		c.debugWallSensorValues = sensorWallValues
+
+		// Calculate neural net
+		nnInput := make([]float64, 0)
+		nnInput = append(nnInput, sensorFoodValues...)
+		nnInput = append(nnInput, sensorAnimalValues...)
+		nnInput = append(nnInput, sensorWallValues...)
+		nnInput = append(nnInput, currentDepth, currentDepthAlignment)
+		nnInput = append(nnInput, 1)
+		c.nnOutput = c.phenotype.Forward(nnInput)
 	}
-	c.debugFoodSensorValues = sensorFoodValues
-	c.sensorAngles = sensorAngles
-	c.debugAnimalSensorValues = sensorAnimalValues
-	c.debugWallSensorValues = sensorWallValues
-
-	// Calculate neural net
-	nnInput := make([]float64, 0)
-	nnInput = append(nnInput, sensorFoodValues...)
-	nnInput = append(nnInput, sensorAnimalValues...)
-	nnInput = append(nnInput, sensorWallValues...)
-	nnInput = append(nnInput, currentDepth, currentDepthAlignment)
-	nnInput = append(nnInput, 1)
-	nnOutput := c.phenotype.Forward(nnInput)
 
 	// Parse the output
-	turn := nnOutput[0] * math.Pi / 2
-	power := nnOutput[1]/2 + 0.5
-	isAttack := nnOutput[2] > 0
+	turn := c.nnOutput[0] * math.Pi / 2
+	power := c.nnOutput[1]/2 + 0.5
+	isAttack := c.nnOutput[2] > 0
 
 	// Apply chosen motion
 	forwardsPush := c.DNA.PushForce() * power

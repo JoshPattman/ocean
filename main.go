@@ -190,7 +190,13 @@ func run() {
 		// We dont need to update the plants map as they never move
 		// Update creatures
 		for _, c := range env.Creatures.Objects {
-			c.Update(1/60.0, env)
+			c.updateTimer += 1 / 60.0
+			if c.updateTimer >= GlobalSP.EnvironmentalParams.BrainUpdateDelay {
+				c.updateTimer -= GlobalSP.EnvironmentalParams.BrainUpdateDelay
+				c.Update(1/60.0, env, true)
+			} else {
+				c.Update(1/60.0, env, false)
+			}
 		}
 
 		// Render

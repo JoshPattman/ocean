@@ -55,7 +55,8 @@ type MutationParameters struct {
 }
 
 type EnvironmentalParameters struct {
-	FoodDecayRate float64 `json:"food_decay_rate"` // The rate at which food decays
+	FoodDecayRate    float64 `json:"food_decay_rate"`    // The rate at which food decays
+	BrainUpdateDelay float64 `json:"brain_update_delay"` // The delay between brain updates
 }
 
 var GlobalSP = SimulationParameters{
@@ -104,6 +105,7 @@ var GlobalSP = SimulationParameters{
 	},
 
 	EnvironmentalParams: EnvironmentalParameters{
-		FoodDecayRate: 0.01,
+		FoodDecayRate:    0.01,
+		BrainUpdateDelay: 0.2,
 	},
 }
