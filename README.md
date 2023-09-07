@@ -4,7 +4,7 @@ This is a game/simulation for evolving simple creatures with neural network brai
 Feel free to download and modify the code to your liking, but if you do use a significant portion of it, please credit me :) I have also included some precompiled binaries for linux and windows, but if you want to compile it yourself, have a look a the makefile. The makefile is setup for comiling from linux to windows though, so i think you might have to modify it for a different os.
 
 ## Playing the game
-Once you have either compiled or downloaded a binary (`ocean`/`ocean.exe`), run it. Make sure when you do this that the binary is next to the sprites folder. If you don't have this, check out the makefile to see where to get it.
+Once you have either compiled or downloaded a binary (`ocean` or `ocean.exe`), run it. Make sure when you do this that the binary is next to the sprites folder. If you don't have this, check out the makefile to see where to get it.
 
 Once the game is running, you should see somthing similar to this:
 
