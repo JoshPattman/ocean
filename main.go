@@ -70,7 +70,7 @@ func run() {
 
 	// Setup Window
 	cfg := pixelgl.WindowConfig{
-		Title:     "Evo Sim",
+		Title:     "Ocean",
 		Bounds:    pixel.R(0, 0, 1024, 768),
 		VSync:     true,
 		Resizable: true,
