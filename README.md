@@ -1,12 +1,12 @@
 # Ocean - A fun little creature simulator for evolving creatures with brains
 This is a game/simulation for evolving simple creatures with neural network brains. The neural networks used are NEAT networks (most of the NEAT algorithm is skipped though), from the package [github.com/JoshPattman/goevo](http://github.com/JoshPattman/goevo). All of the graphics are done using the very cool package [github.com/faiface/pixel](http://github.com/faiface/pixel).
 
-Feel free to download and modify the code to your liking, but if you do use a significant portion of it, please credit me :) I have also included some precompiled binaries for linux and windows, but if you want to compile it yourself, have a look a the makefile. The makefile is setup for comiling from linux to windows though, so i think you might have to modify it for a different os.
+Feel free to download and modify the code to your liking, but if you do use a significant portion of it, please credit me :) I have also included some precompiled binaries for Linux and Windows, but if you want to compile it yourself, have a look a the makefile. The makefile is setup for compiling from Linux to Windows though, so I think you might have to modify it for a different os.
 
 ## Playing the game
 Once you have either compiled or downloaded a binary (`ocean` or `ocean.exe`), run it. Make sure when you do this that the binary is next to the sprites folder. If you don't have this, check out the makefile to see where to get it.
 
-Once the game is running, you should see somthing similar to this:
+Once the game is running, you should see something similar to this:
 
 ![sim1](./README_assets/sim1.png)
 
