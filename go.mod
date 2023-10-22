@@ -3,11 +3,11 @@ module main
 go 1.19
 
 require (
-	github.com/JoshPattman/goevo v0.1.2
+	github.com/JoshPattman/goevo v0.3.0
 	github.com/PerformLine/go-stockutil v1.9.3
 	github.com/aquilax/go-perlin v1.1.0
 	github.com/faiface/pixel v0.10.0
-	golang.org/x/image v0.0.0-20190523035834-f03afa92d3ff
+	golang.org/x/image v0.6.0
 )
 
 require (
@@ -24,6 +24,7 @@ require (
 	github.com/jbenet/go-base58 v0.0.0-20150317085156-6237cf65f3a6 // indirect
 	github.com/jdkato/prose v1.2.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	gonum.org/v1/gonum v0.14.0 // indirect
 	gopkg.in/neurosnap/sentences.v1 v1.0.6 // indirect
 	k8s.io/apimachinery v0.23.4 // indirect
 	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect

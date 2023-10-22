@@ -4,9 +4,39 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/JoshPattman/goevo"
+	E "github.com/JoshPattman/goevo"
 	"github.com/faiface/pixel"
 )
+
+var creatureSubstrate *E.LayeredSubstrate
+
+func makeCreatureSubstrate() *E.LayeredSubstrate {
+	numInputs := NewCreature(CreatureDNA{}).NumInputs()
+	numHidden := 10
+	numOutputs := 3
+
+	inputs := make([]E.Pos, numInputs)
+	hidden := make([]E.Pos, numHidden)
+	outputs := make([]E.Pos, numOutputs)
+
+	for i := 0; i < numInputs; i++ {
+		inputs[i] = E.P(float64(i+1) / float64(numInputs)) // This will always leave position 0 for the bias
+	}
+
+	for i := 0; i < numHidden; i++ {
+		hidden[i] = E.P(float64(i+1) / float64(numHidden))
+	}
+
+	for i := 0; i < numOutputs; i++ {
+		outputs[i] = E.P(float64(i+1) / float64(numOutputs))
+	}
+
+	return E.NewLayeredSubstrate(
+		[][]E.Pos{inputs, hidden, outputs},
+		[]E.Activation{E.AcLin, E.AcReLU, E.AcTanh},
+		E.P(0),
+	)
+}
 
 type Creature struct {
 	Pos                     pixel.Vec
@@ -20,7 +50,7 @@ type Creature struct {
 	debugAnimalSensorValues []float64
 	debugWallSensorValues   []float64
 	sensorAngles            []float64
-	phenotype               *goevo.Phenotype
+	phenotype               E.Forwarder
 	updateTimer             float64
 	nnOutput                []float64
 }
@@ -35,9 +65,10 @@ func NewCreature(dna CreatureDNA) *Creature {
 		sa = append(sa, a)
 	}
 
-	var pheno *goevo.Phenotype
+	var pheno E.Forwarder
 	if dna.Genotype != nil {
-		pheno = goevo.NewPhenotype(dna.Genotype)
+		pheno = E.NewPhenotype(dna.Genotype)
+		pheno = creatureSubstrate.NewPhenotype(pheno)
 	}
 	return &Creature{
 		Pos:          pixel.V(0, 0),
@@ -320,22 +351,22 @@ func (c *Creature) Child() *Creature {
 	maxReps := 4.0
 	for i := 0; i < int(maxReps); i++ {
 		if rand.Float64() < GlobalSP.MutationParameters.SynapseMutationProbability/maxReps {
-			goevo.MutateRandomSynapse(dna.Genotype, GlobalSP.MutationParameters.SynapseMutationSize)
+			E.MutateRandomSynapse(dna.Genotype, GlobalSP.MutationParameters.SynapseMutationSize)
 		}
 	}
 	for i := 0; i < int(maxReps); i++ {
 		if rand.Float64() < GlobalSP.MutationParameters.SynapseGrowthProbability/maxReps {
-			goevo.AddRandomSynapse(gtCounter, dna.Genotype, GlobalSP.MutationParameters.SynapseGrowthSize, false, 5)
+			E.AddRandomSynapse(gtCounter, dna.Genotype, GlobalSP.MutationParameters.SynapseGrowthSize, false, 5)
 		}
 	}
 	for i := 0; i < int(maxReps); i++ {
 		if rand.Float64() < GlobalSP.MutationParameters.NeuronGrowProbability/maxReps {
-			goevo.AddRandomNeuron(gtCounter, dna.Genotype, goevo.ActivationSigmoid)
+			E.AddRandomNeuron(gtCounter, dna.Genotype, E.ChooseActivationFrom([]E.Activation{E.AcCos, E.AcSin, E.AcReLU, E.AcReLUM, E.AcTanh, E.AcSig, E.AcStep}))
 		}
 	}
 	for i := 0; i < int(maxReps); i++ {
 		if rand.Float64() < GlobalSP.MutationParameters.SynapsePruneProbability/maxReps {
-			goevo.PruneRandomSynapse(dna.Genotype)
+			E.PruneRandomSynapse(dna.Genotype)
 		}
 	}
 	// Create creture
