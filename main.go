@@ -42,7 +42,7 @@ func main() {
 }
 
 func run() {
-	startTime := time.Now()
+	simTimer := time.Second * 0
 
 	// Setup goevo
 	gtCounter = &SaveLoadCounter{}
@@ -118,6 +118,7 @@ func run() {
 		instructionsText.Clear()
 		fmt.Fprintf(instructionsText, "(I)mport Creature, Sca(t)ter Food, (L)oad Sim Params")
 		// Update user controls
+		fastForwardSteps := 1
 		if win.Pressed(pixelgl.KeyA) {
 			offset.X += 10 / scale
 		}
@@ -136,6 +137,9 @@ func run() {
 		if win.Pressed(pixelgl.KeyE) {
 			scale *= 1.01
 		}
+		if win.Pressed(pixelgl.KeyF) {
+			fastForwardSteps = 10
+		}
 		if win.Pressed(pixelgl.KeyL) {
 			err := reloadSimParams()
 			if err != nil {
@@ -143,60 +147,62 @@ func run() {
 			}
 		}
 
-		newCreatures := make([]*Creature, 0)
-		for _, c := range env.Creatures.Objects {
-			me := c.DNA.MaxEnergy()
-			if c.Energy >= me*0.8 && rand.Float64() < (1/60.0)/5 {
-				c1 := c.Child()
-				c1.Pos = c.Pos
-				c1.Energy = me * 0.79
-				c.Energy = me * 0.79
-				newCreatures = append(newCreatures, c1)
-			}
-		}
-		for _, c1 := range newCreatures {
-			env.Creatures.Add(c1)
-		}
-
 		if win.JustPressed(pixelgl.KeyT) {
 			env.ScatterFood(0.01)
 		}
-
-		// Update Sim
-		// Grow new food on plants
-		for _, p := range env.Plants.Objects {
-			if rand.Float64() < (1/60.0)/GlobalSP.PlantParams.FoodGrowthDelay {
-				// Check if there is already a food under us
-				if len(env.Food.Query(p.Pos, 0.1)) == 0 {
-					energy := math.Pow(p.Fertility, 3) * GlobalSP.PlantParams.GrownFoodEnergy
-					f := NewFood(energy, true)
-					f.Pos = p.Pos
-					f.Rot = rand.Float64() * 2 * math.Pi
-					env.Food.Add(f)
+		for i := 0; i < fastForwardSteps; i++ {
+			// Update Sim
+			// Child creatures
+			newCreatures := make([]*Creature, 0)
+			for _, c := range env.Creatures.Objects {
+				me := c.DNA.MaxEnergy()
+				if c.Energy >= me*0.8 && rand.Float64() < (1/60.0)/5 {
+					c1 := c.Child()
+					c1.Pos = c.Pos
+					c1.Energy = me * 0.79
+					c.Energy = me * 0.79
+					newCreatures = append(newCreatures, c1)
 				}
 			}
-		}
-		// Decay Food
-		for _, f := range env.Food.Objects {
-			f.Energy -= GlobalSP.EnvironmentalParams.FoodDecayRate * (1 / 60.0)
-			if f.Energy <= 0 {
-				env.Food.Remove(f)
+			for _, c1 := range newCreatures {
+				env.Creatures.Add(c1)
 			}
-		}
+			// Grow new food on plants
+			for _, p := range env.Plants.Objects {
+				if rand.Float64() < (1/60.0)/GlobalSP.PlantParams.FoodGrowthDelay {
+					// Check if there is already a food under us
+					if len(env.Food.Query(p.Pos, 0.1)) == 0 {
+						energy := math.Pow(p.Fertility, 3) * GlobalSP.PlantParams.GrownFoodEnergy
+						f := NewFood(energy, true)
+						f.Pos = p.Pos
+						f.Rot = rand.Float64() * 2 * math.Pi
+						env.Food.Add(f)
+					}
+				}
+			}
+			// Decay Food
+			for _, f := range env.Food.Objects {
+				f.Energy -= GlobalSP.EnvironmentalParams.FoodDecayRate * (1 / 60.0)
+				if f.Energy <= 0 {
+					env.Food.Remove(f)
+				}
+			}
 
-		// Update hash maps
-		env.Creatures.Refresh()
-		env.Food.Refresh()
-		// We dont need to update the plants map as they never move
-		// Update creatures
-		for _, c := range env.Creatures.Objects {
-			c.updateTimer += 1 / 60.0
-			if c.updateTimer >= GlobalSP.EnvironmentalParams.BrainUpdateDelay {
-				c.updateTimer -= GlobalSP.EnvironmentalParams.BrainUpdateDelay
-				c.Update(1/60.0, env, true)
-			} else {
-				c.Update(1/60.0, env, false)
+			// Update hash maps
+			env.Creatures.Refresh()
+			env.Food.Refresh()
+			// We dont need to update the plants map as they never move
+			// Update creatures
+			for _, c := range env.Creatures.Objects {
+				c.updateTimer += 1 / 60.0
+				if c.updateTimer >= GlobalSP.EnvironmentalParams.BrainUpdateDelay {
+					c.updateTimer -= GlobalSP.EnvironmentalParams.BrainUpdateDelay
+					c.Update(1/60.0, env, true)
+				} else {
+					c.Update(1/60.0, env, false)
+				}
 			}
+			simTimer += time.Second / 60
 		}
 
 		// Render
@@ -237,7 +243,7 @@ func run() {
 		timerText.Clear()
 		numCreaturesText.Clear()
 		// Update Stats
-		fmt.Fprintf(timerText, "Sim Time: %s", time.Since(startTime).String())
+		fmt.Fprintf(timerText, "Sim Time: %.1f", simTimer.Seconds())
 		fmt.Fprintf(numCreaturesText, "Num Creatures: %d\nNum Food: %d", len(env.Creatures.Objects), len(env.Food.Objects))
 		// Draw Stats
 		timerText.Draw(win, pixel.IM.Moved(pixel.V(10, win.Bounds().H()-20)))
